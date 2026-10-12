@@ -2,17 +2,17 @@ from api import ArazimWarsBot, Emote, Exceptions, Monkeys
 import random
 
 EMOTES = [
-    Emote.NONE,
-    Emote.ANGRY,
-    Emote.COOL,
-    Emote.CRYING,
-    Emote.FACEPALM,
-    Emote.IDEA_THOUGHT,
-    Emote.LAUGHING,
-    Emote.LOVE,
-    Emote.POINTING,
-    Emote.SHOCKED,
-    Emote.SMILE,
+    # Emote.NONE,
+    # Emote.ANGRY,
+    # Emote.COOL,
+    # Emote.CRYING,
+    # Emote.FACEPALM,
+    # Emote.IDEA_THOUGHT,
+    # Emote.LAUGHING,
+    # Emote.LOVE,
+    # Emote.POINTING,
+    # Emote.SHOCKED,
+    # Emote.SMILE,
     Emote.THUMBS_DOWN,
     Emote.THUMBS_UP,
 ]
@@ -31,6 +31,12 @@ class MyBot(ArazimWarsBot):
         emote handling
         """
 
+        self.spam_timer -= 1
+
+        if self.spam_timer >= 0:
+            self.context.display_emote(EMOTES[self.spam_timer % len(EMOTES)])
+            return
+
         curr_alive = 0
 
         for i in range(self.context.get_player_count()):
@@ -47,7 +53,7 @@ class MyBot(ArazimWarsBot):
 
         self.player_count = curr_alive
 
-        if random.randint(0, 60 * 10):
+        if random.randint(0, 60 * 10) == 0:
             self.spam_timer = 60 * 4
             
 
