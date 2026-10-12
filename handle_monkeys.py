@@ -1,5 +1,6 @@
-from api import ArazimWarsBot, Emote, Exceptions, Monkeys, MonkeyInfo, Maps
 import random
+
+from api import ArazimWarsBot, Exceptions, Maps, MonkeyInfo, Monkeys
 
 PLACING_ORDERS = {
     Maps.INTERCHANGE: {
@@ -103,9 +104,7 @@ class MyBot(ArazimWarsBot):
 
     def upgrade_monkey(self, monkey_index: int, top_row: bool) -> bool:
         result =  self.context.upgrade_monkey(monkey_index, top_row)
-        if result == Exceptions.NOT_ENOUGH_MONEY:
-            return False
-        return True
+        return result == Exceptions.NOT_ENOUGH_MONEY
 
     def get_next_coordinate(self, type: str) -> list[float, float]:
         """
