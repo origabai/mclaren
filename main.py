@@ -206,6 +206,7 @@ class MyBot(ArazimWarsBot):
         self.emote_wait = False
         self.wait = 0
         self.prev_health = 0
+        self.enemy = None
 
         self.targeted_enemy_index = self.get_other_player_index()
         self.next_enemy_index = self.get_other_player_index()
@@ -513,7 +514,7 @@ class MyBot(ArazimWarsBot):
             elif strat == ECONOMY_ECONOMY.ECONOMY and other_health > health:
                 health = other_health
                 index = i
-        self.update_enemy_index(index)
+        self.targeted_enemy_index = index
         self.strategy = strat
         self.wait = 20
 
