@@ -416,7 +416,11 @@ class MyBot(ArazimWarsBot):
             self.targeted_enemy_index,
             available_bloons[-1][0],
             is_camo=(
-                self.is_camo_available() and strategy == ECONOMY_ECONOMY.CAMMO_LEAD
+                self.is_camo_available()
+                and (
+                    strategy == ECONOMY_ECONOMY.CAMMO_LEAD
+                    or strategy == ECONOMY_ECONOMY.CAMO
+                )
             ),
         )
 
@@ -462,11 +466,11 @@ class MyBot(ArazimWarsBot):
         filter_func = self.is_latest_bloon_available
 
         match strategy:
-            case ECONOMY_ECONOMY.ECONOMY:
+            case ECONOMY_ECONOMY.ECONOMY | ECONOMY_ECONOMY.CAMO:
                 filter_func = self.is_latest_bloon_available
             case ECONOMY_ECONOMY.DAMAGE:
                 filter_func = self.is_latest_moab_available
-            case ECONOMY_ECONOMY.CAMMO_LEAD:
+            case ECONOMY_ECONOMY.CAMMO_LEAD | ECONOMY_ECONOMY.LEAD:
                 filter_func = self.is_latest_lead_available
 
         return dict(filter(filter_func, ECO_BLOONS_INFO.items()))
