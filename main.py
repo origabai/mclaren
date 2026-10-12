@@ -82,11 +82,14 @@ class MyBot(ArazimWarsBot):
         return
         # total, cammo, lead= self.get_board_status()
 
+    ############targets sections################
     def handle_targets(self):
         pass
 
+    ############monkeys sections################
     def handle_monkeys(self):
         pass
 
+    ############baloons sections################
     def send_ballons(self):
         pass
