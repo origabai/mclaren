@@ -1,4 +1,3 @@
-import numpy as np
 from api import *
 
 def handle_monkey_targets_first(self) -> None:
