@@ -217,16 +217,6 @@ class MyBot(ArazimWarsBot):
     def get_enemy_bloons(self) -> list[int]:
         return [x.eco_from for x in self.context.get_bloons() if x.eco_from is not None]
 
-    def update_enemy_index(self):
-        if self.context.get_player_health(self.targeted_enemy_index) <= 0:
-            self.targeted_enemy_index = self.next_enemy_index
-
-        if enemy_bloons := self.get_enemy_bloons():
-            self.next_enemy_index = enemy_bloons[0]
-
-        if self.next_enemy_index == self.targeted_enemy_index:
-            self.next_enemy_index = self.get_other_player_index()
-
     def _get_action_price(self, action: list) -> int:
         """Get the price of an action"""
         if action[0] == "UPGRADE":
@@ -248,14 +238,14 @@ class MyBot(ArazimWarsBot):
 
     def run(self) -> None:
         self.update_round()
-        self.update_enemy_index()
+        self.find_someone_to_bully()
         self.handle_targets()
         self.manage_budget()
         self.monkeys_spending_roundly = 0
         self.handle_monkeys()
         self.monkeys_saving = self.monkeys_spending_roundly
         if not self.defence:
-            self.economy_saving = self.send_bloons(ECONOMY_ECONOMY.ECONOMY)
+            self.economy_saving = self.send_bloons(self.strategy)
         self.handle_emotes()
 
     # def get_board_status(self) -> tuple[int, int]:
@@ -437,6 +427,43 @@ class MyBot(ArazimWarsBot):
             camo = camo or is_camo
             camo_lead = camo_lead or (is_camo and is_lead)
         return lead, camo, camo_lead
+
+    def find_someone_to_bully(self):
+        self.wait -= 1
+        if self.enemy is not None and self.context.is_player_active(self.enemy):
+            if self.wait == 0:
+                self.strategy = ECONOMY_ECONOMY.ECONOMY
+            return
+        players_count = self.context.get_player_count()
+        my_num = self.context.get_current_player_index()
+        health = 0
+        index = 0
+        strat = ECONOMY_ECONOMY.ECONOMY
+        for i in range(players_count):
+            if i == my_num:
+                continue
+            other_health = self.context.get_player_health(i)
+            lead, cemo, ld = self.is_player_camo_lead(i)
+            if cemo and (strat != ECONOMY_ECONOMY.CAMO or health < other_health):
+                health = other_health
+                index = i
+                strat = ECONOMY_ECONOMY.CAMO
+            elif lead and strat != ECONOMY_ECONOMY.ECONOMY and (strat != ECONOMY_ECONOMY.LEAD or health < other_health):
+                health = other_health
+                index = i
+                strat = ECONOMY_ECONOMY.LEAD
+            elif ld and (
+                strat == ECONOMY_ECONOMY.ECONOMY or (strat == ECONOMY_ECONOMY.CAMMO_LEAD and other_health > health)
+            ):
+                health = other_health
+                index = i
+                strat = ECONOMY_ECONOMY.CAMMO_LEAD
+            elif strat == ECONOMY_ECONOMY.ECONOMY and other_health > health:
+                health = other_health
+                index = i
+        self.update_enemy_index(index)
+        self.strategy = strat
+        self.wait = 20
 
     #####EMOTE######
     def handle_emotes(self) -> None:
