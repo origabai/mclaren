@@ -17,6 +17,7 @@ EMOTES = [
     # Emote.THUMBS_UP,
 ]
 
+
 class MyBot(ArazimWarsBot):
     def setup(self) -> None:
         self.emote_index = 0
@@ -36,10 +37,8 @@ class MyBot(ArazimWarsBot):
 
         if self.emote_index % 120 == 0:
             self.emote_wait = False
-        
+
         if self.emote_wait:
             return
 
         self.context.display_emote(EMOTES[(self.emote_index) % len(EMOTES)])
-        
-        
