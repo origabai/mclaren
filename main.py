@@ -26,8 +26,6 @@ EMOTES = [
     # Emote.THUMBS_DOWN,
     # Emote.THUMBS_UP,
 ]
-STRENGTH = []
-
 
 MONKEY_NAMES = {
     "Dart Monkey": Monkeys.DART_MONKEY,
@@ -64,10 +62,7 @@ def can_monkey_see_camo(monkey: MonkeyInfo) -> bool:
     if monkey.kind == Monkeys.NINJA_MONKEY:
         return True
 
-    if monkey.kind == Monkeys.SNIPER_MONKEY and monkey.bottom_level >= 2:
-        return True
-
-    return False
+    return bool(monkey.kind == Monkeys.SNIPER_MONKEY and monkey.bottom_level >= 2)
 
 
 def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
@@ -249,15 +244,15 @@ class MyBot(ArazimWarsBot):
             self.economy_saving = self.send_bloons(ECONOMY_ECONOMY.ECONOMY)
         self.handle_emotes()
 
-    def get_board_status(self) -> tuple[int, int]:
-        """calculate the cammo baloons strength and the lead baloons strength and the total baloons strength
-        (total, cammo, lead)"""
-        cammo = 0
-        lead = 0
-        total = 0
-        bloons = self.context.get_bloons()
-        return  # TODO
-        # for bloon in bloons :
+    # def get_board_status(self) -> tuple[int, int]:
+    #     """calculate the cammo baloons strength and the lead baloons strength and the total baloons strength
+    #     (total, cammo, lead)"""
+    #     cammo = 0
+    #     lead = 0
+    #     total = 0
+    #     bloons = self.context.get_bloons()
+    #     return  # TODO
+    # for bloon in bloons :
 
     def manage_budget(self) -> None:
         """
@@ -266,12 +261,14 @@ class MyBot(ArazimWarsBot):
         if self.defence:
             self.monkey_budget = self.context.get_money()
             return
-        self.monkeys_saving = self.context.get_money() - self.context.get_eco()
+        self.monkeys_saving = self.context.get_money() - int(self.context.get_eco())
         monkey_add = int(
             self.context.get_eco() * (0.3 + math.sqrt(1 / self.round) * 0.7)
         )
         self.monkey_budget = self.monkeys_saving + monkey_add
-        self.economy_budget = self.economy_saving + self.context.get_eco() - monkey_add
+        self.economy_budget = (
+            self.economy_saving + int(self.context.get_eco()) - monkey_add
+        )
 
     ############targets sections################
     def handle_targets(self) -> None:
@@ -335,7 +332,7 @@ class MyBot(ArazimWarsBot):
 
     ############monkeys sections################
 
-    def place_monkey(self, monkey: Monkeys, position: tuple[float, float]) -> None:
+    def place_monkey(self, monkey: Monkeys, position: tuple[float, float]) -> bool:
         result = self.context.place_monkey(monkey, position)
         if result == Exceptions.OK:
             self.monkeys.append(
@@ -348,15 +345,15 @@ class MyBot(ArazimWarsBot):
             or result == Exceptions.TOO_CLOSE_TO_OTHER_MONKEY
         ):
             self.context.log_warning(f"Couldn't place monkey because of: {result}")
-            return result
+            return False
         elif result == Exceptions.NOT_ENOUGH_MONEY:
+            return False
+        else:
             return False
 
     def upgrade_monkey(self, monkey_index: int, top_row: bool) -> bool:
         result = self.context.upgrade_monkey(monkey_index, top_row)
-        if result == Exceptions.NOT_ENOUGH_MONEY:
-            return False
-        return True
+        return result != Exceptions.NOT_ENOUGH_MONEY
 
     def handle_monkeys(self):
         if self.action_index >= len(PLACING_LAYOUTS[self.map]):
