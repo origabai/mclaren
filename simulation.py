@@ -8,9 +8,11 @@ GAMES = 30
 def bot_battle(bot1, bot2, games = GAMES):
     client = Client()
     ans = 0
-    with ThreadPoolExecutor(12) as t:
-        if client.run_simulation("Starting", [bot1, bot2]).winner_index == 0:
+    for _ in range(games):
+        res = client.run_simulation({"map":"Interchange","mode":"normal"}, [bot1, bot2], seed=12)
+        print(res)
+        if res.winner_index == 0:
             ans += 1
     return ans
 
-print(bot_battle("simple.py", "main.py"))
+print(bot_battle("nabzan.py", "simple.py"))

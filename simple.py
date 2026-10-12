@@ -24,7 +24,7 @@ class MyBot(ArazimWarsBot):
         """
 
         if self.context.get_current_time() % 5 == 0:
-            self.context.log_info("Placing Monkeys!")
+            # self.context.log_info("Placing Monkeys!")
 
             # Place Monkeys
             result = self.context.place_monkey(
@@ -38,7 +38,7 @@ class MyBot(ArazimWarsBot):
                 or result == Exceptions.TOO_CLOSE_TO_BLOON_ROUTE
                 or result == Exceptions.TOO_CLOSE_TO_OTHER_MONKEY
             ):
-                self.context.log_warning(f"Couldn't place monkey because of: {result}")
+                # self.context.log_warning(f"Couldn't place monkey because of: {result}")
                 self.attempted_position += 1
 
         for monkey_index in range(self.monkey_count):
