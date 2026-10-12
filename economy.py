@@ -1,4 +1,5 @@
 import api
+from helpers import ECONOMY_ECONOMY
 
 CURRENT_MAX_BLOON = api.EcoBloons.GROUPED_PINK
 
@@ -14,8 +15,19 @@ def get_round() -> int:
 def get_player_index() -> int:
     return 0
 
-def send_bloons():
-    send_latest_available_bloon()
+def send_bloons(strategy: ECONOMY_ECONOMY) -> int:
+    """ 
+    Decides according to the current strategy which bloons to send.
+    
+    Returns:
+        Amount of budget not used.
+    """
+
+    match strategy:
+        case ECONOMY_ECONOMY.ECONOMY:
+            return send_latest_available_bloon()
+        case _:
+            return get_economy_budget()
 
 def send_latest_available_bloon() -> int:
     """ Basic strategy for sending latest bloon available. """
