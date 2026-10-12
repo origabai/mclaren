@@ -10,6 +10,7 @@ author: afek the mighty pytzov founder
 
 # Only pick the cool emotes of course
 EMOTES = [Emote.NONE, Emote.COOL, Emote.LAUGHING, Emote.LOVE]
+STRENGTH = []
 
 
 class ECONOMY_ECONOMY(Enum):
@@ -25,65 +26,67 @@ class MyBot(ArazimWarsBot):
         self.monkey_levels: list[int] = []
         self.attempted_position = 0
         self.emote_index = 0
+        self.defence = False
+        self.economy_saving = 0
+        self.monkeys_saving = 0
+        self.round = 0
 
     def get_round(self) -> int:
-        return self.context.get_current_steps()
+        return self.round
+
+    def update_round(self) -> None:
+        if self.context.get_round_times()[self.round + 1] <= self.context.get_current_steps():
+            self.round += 1
+
+    def get_economy_badget(self) -> int:
+        return self.economy_badget
+
+    def get_monkey_badget(self) -> int:
+        return self.monkey_badget
+
+    def get_player_index(self) -> int:
+        return self.context.get_current_player_index()
 
     def run(self) -> None:
-        self.handle_monkey_placement_and_upgrades()
-        self.handle_monkey_targets()
-        self.handle_emotes()
+        self.handle_targets()
+        self.manage_budget()
+        self.monkeys_spending_roundly = 0
+        self.handle_monkeys()
+        self.monkeys_saving = self.monkeys_spending_roundly
+        if not self.defence:
+            self.economy_saving = self.send_baloons()
 
-    def handle_monkey_placement_and_upgrades(self) -> None:
+    def get_board_status(self) -> tuple[int, int]:
+        """calculate the cammo baloons strength and the lead baloons strength and the total baloons strength
+        (total, cammo, lead)"""
+        cammo = 0
+        lead = 0
+        total = 0
+        bloons = self.context.get_bloons()
+        return  # TODO
+        # for bloon in bloons :
+
+    def manage_budget(self) -> None:
         """
-        Basic monkey placement and upgrades handling.
-        Tries to place monkeys in a straight line once every 5 seconds.
-        After 20 seconds, tries to upgrade each monkey's top row.
+        manging the budget and spliting him pytzovly
         """
+        if self.defence:
+            self.monkey_badget = self.context.get_current_budget()
+            return
+        if self.round > 1:
+            self.monkey_badget = self.monkeys_saving + int(self.context.get_eco() * 0.40)
+            self.economy_badget = self.monkeys_saving + self.context - int(self.context.get_eco() * 0.40)
+        else:
+            self.monkey_badget = int(self.context.get_money() * 0.9)
+            self.economy_badget = self.context.get_money() - int(self.context.get_money() * 0.9)
+        return
+        # total, cammo, lead= self.get_board_status()
 
-        if self.context.get_current_time() % 5 == 0:
-            self.context.log_info("Placing Monkeys!")
+    def handle_targets(self):
+        pass
 
-            # Place Monkeys
-            result = self.context.place_monkey(Monkeys.DART_MONKEY, (24 * self.attempted_position + 24, 400))
-            if result == Exceptions.OK:
-                self.monkey_count += 1
-                self.monkey_levels.append(0)
-            elif (
-                result == Exceptions.OUT_OF_MAP
-                or result == Exceptions.TOO_CLOSE_TO_BLOON_ROUTE
-                or result == Exceptions.TOO_CLOSE_TO_OTHER_MONKEY
-            ):
-                self.context.log_warning(f"Couldn't place monkey because of: {result}")
-                self.attempted_position += 1
+    def handle_monkeys(self):
+        pass
 
-        for monkey_index in range(self.monkey_count):
-            # Upgrade Monkeys
-            if (
-                self.context.get_current_time() > 20
-                and self.monkey_levels[monkey_index] < 4
-                and self.context.upgrade_monkey(monkey_index, True)
-            ):
-                self.monkey_levels[monkey_index] += 1
-
-    def handle_monkey_targets(self) -> None:
-        """
-        Basic monkey targeting handling.
-        Picks the first visible target for each monkey.
-        """
-
-        for monkey_index in range(self.monkey_count):
-            # Target Bloons
-            targets = self.context.get_monkey_targets(monkey_index)
-            if len(targets) > 0:
-                self.context.target_bloon(monkey_index, targets[0].index)
-
-    def handle_emotes(self) -> None:
-        """
-        Basic emote handling.
-        Shwos one of the cool emotes every second.
-        """
-
-        if self.context.get_current_time() % 1 == 0:
-            self.context.display_emote(EMOTES[self.emote_index])
-            self.emote_index = (self.emote_index + 1) % len(EMOTES)
+    def send_ballons(self):
+        pass
