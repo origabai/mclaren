@@ -175,6 +175,7 @@ class MyBot(ArazimWarsBot):
         self.monkeys_spending_roundly = 0
         self.emote_index = 0
         self.emote_wait = False
+        self.wait = 0
 
         self.targeted_enemy_index = self.get_other_player_index()
         self.next_enemy_index = self.get_other_player_index()
