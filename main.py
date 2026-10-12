@@ -1,6 +1,7 @@
 from enum import Enum
 
 from api import ArazimWarsBot, Emote, Exceptions, Monkeys
+import api
 
 """
 the mighty main of the afek the mighty pytzov founder
@@ -11,6 +12,10 @@ author: afek the mighty pytzov founder
 # Only pick the cool emotes of course
 EMOTES = [Emote.NONE, Emote.COOL, Emote.LAUGHING, Emote.LOVE]
 STRENGTH = []
+CURRENT_MAX_BLOON = api.EcoBloons.GROUPED_PINK
+MIN_MOAB_CLASS = api.EcoBloons.BFB
+
+MAX_QUEUE_SIZE = 5
 
 
 class ECONOMY_ECONOMY(Enum):
@@ -35,13 +40,13 @@ class MyBot(ArazimWarsBot):
         return self.round
 
     def update_round(self) -> None:
-        if self.context.get_round_times()[self.round + 1] <= self.context.get_current_steps():
+        if self.context.self.get_round_times()[self.round + 1] <= self.context.get_current_steps():
             self.round += 1
 
-    def get_economy_badget(self) -> int:
+    def get_economy_budget(self) -> int:
         return self.economy_badget
 
-    def get_monkey_badget(self) -> int:
+    def get_monkey_budget(self) -> int:
         return self.monkey_badget
 
     def get_player_index(self) -> int:
@@ -54,7 +59,7 @@ class MyBot(ArazimWarsBot):
         self.handle_monkeys()
         self.monkeys_saving = self.monkeys_spending_roundly
         if not self.defence:
-            self.economy_saving = self.send_baloons()
+            self.economy_saving = self.send_baloons(ECONOMY_ECONOMY.ECONOMY)
 
     def get_board_status(self) -> tuple[int, int]:
         """calculate the cammo baloons strength and the lead baloons strength and the total baloons strength
@@ -91,5 +96,54 @@ class MyBot(ArazimWarsBot):
         pass
 
     ############baloons sections################
-    def send_ballons(self):
-        pass
+    def send_bloons(self, strategy: ECONOMY_ECONOMY) -> int:
+        """
+        Decides according to the current strategy which bloons to send.
+
+        Returns:
+            Amount of budget not used.
+        """
+        # Prevent sending if full
+        if self.context.get_eco_queue_size() >= MAX_QUEUE_SIZE:
+            return self.get_economy_budget()
+
+            # Get available bloons
+        available_bloons = self.get_available_bloons(strategy)
+        if not available_bloons:
+            return self.get_economy_budget()
+
+        # sort available bloons
+        available_bloons = sorted(available_bloons.items(), key=lambda x: x[1].availability_round)
+
+        # Send the bloon
+        result = self.context.send_bloons(self.get_player_index(), available_bloons[-1][0])
+
+        # Return how much budget was used
+        if result == api.Result.OK:
+            return self.get_economy_budget() - available_bloons[-1][1].cost
+        else:
+            return self.get_economy_budget()
+
+    def is_available(self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
+        """Returns if a bloon is available"""
+        return ecobloon[1].availability_round <= self.get_round() and ecobloon[1].cost <= self.get_economy_budget()
+
+    def is_latest_bloon_available(self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
+        """Returns if an ecobloon is available to be sent according to round and funds."""
+        return self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
+
+    def is_latest_moab_available(self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
+        """Returns if an ecobloon is available and is a moab class."""
+        return self.is_available(ecobloon) and ecobloon[0].value >= MIN_MOAB_CLASS.value
+
+    def get_available_bloons(self, strategy: ECONOMY_ECONOMY):
+        """Returns a list of all available bloons according to the strategy."""
+        filter_func = self.is_latest_bloon_available
+
+        match strategy:
+            case ECONOMY_ECONOMY.ECONOMY:
+                filter_func = self.is_latest_bloon_available
+            case ECONOMY_ECONOMY.DAMAGE:
+                filter_func = self.is_latest_moab_available
+
+        return dict(filter(filter_func, api.ECO_BLOONS_INFO.items()))
