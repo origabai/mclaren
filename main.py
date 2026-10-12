@@ -173,6 +173,7 @@ class MyBot(ArazimWarsBot):
         self.monkeys_spending_roundly = 0
         self.emote_index = 0
         self.emote_wait = False
+        self.prev_health = 0
 
         self.targeted_enemy_index = self.get_other_player_index()
         self.next_enemy_index = self.get_other_player_index()
@@ -282,6 +283,7 @@ class MyBot(ArazimWarsBot):
         if self.defence:
             self.monkey_budget = self.context.get_money()
             return
+
         self.monkeys_saving = self.context.get_money() - int(self.context.get_eco())
         monkey_add = int(
             self.context.get_eco() * (0.3 + math.sqrt(1 / self.round) * 0.7)
@@ -290,6 +292,12 @@ class MyBot(ArazimWarsBot):
         self.economy_budget = (
             self.economy_saving + int(self.context.get_eco()) - monkey_add
         )
+
+        curr_health = self.context.get_player_health(self.get_player_index())
+        if curr_health < self.prev_health:
+            self.monkey_budget += self.economy_budget
+            self.economy_budget = 0
+        self.prev_health = curr_health
 
     ############targets sections################
     def handle_targets(self) -> None:
