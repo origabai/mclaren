@@ -1,7 +1,6 @@
 import numpy as np
 from api import *
 
-# shoot first
 def handle_monkey_targets_first(self) -> None:
     """
     Basic monkey targeting handling.
@@ -14,8 +13,10 @@ def handle_monkey_targets_first(self) -> None:
         if len(targets) > 0:
             self.context.target_bloon(monkey_index, targets[0].index)
 
-# check if the monkey can shoot lead
 def can_monkey_shoot_lead(monkey: MonkeyInfo) -> bool:
+    """
+    check if the monkey can shoot lead  
+    """
     if monkey.kind == Monkeys.DART_MONKEY and monkey.top_level >= 4:
         return True
 
@@ -30,8 +31,10 @@ def can_monkey_shoot_lead(monkey: MonkeyInfo) -> bool:
 
     return False
 
-# check if the monkey can see camo
 def can_monkey_see_camo(monkey: MonkeyInfo) -> bool:
+    """
+    check if the monkey can see camo
+    """
     if monkey.kind == Monkeys.DART_MONKEY and monkey.top_level >= 2:
         return True
 
@@ -44,8 +47,10 @@ def can_monkey_see_camo(monkey: MonkeyInfo) -> bool:
     return False
         
 
-# check if the monkey can shoot the bloon
 def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
+    """
+    check if the monkey can shoot the bloon
+    """
     can_shoot = True
 
     if bloon.kind == Bloons.LEAD:
@@ -62,15 +67,15 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
     
 
 
-# only shoot bloons you can target
 def better_handle_monkey_targets(self) -> None:
+    """
+    only shoot bloons you can target
+    """
     for monkey_index in range(self.monkey_count):
         targets = self.context.get_monkey_targets(monkey_index)
         monkey = self.monkeys[monkey_index]
 
         for bloon in targets:
-            if self.can_monkey_shoot_bloon(monkey, bloon):
+            if can_monkey_shoot_bloon(monkey, bloon):
                 self.context.target_bloon(monkey_index, targets[0].index)
                 break
-            
-    
