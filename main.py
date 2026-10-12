@@ -1,18 +1,7 @@
 import random
 from enum import Enum
 
-import api
-from api import (
-    ArazimWarsBot,
-    BloonInfo,
-    Bloons,
-    Emote,
-    Exceptions,
-    GameMode,
-    Maps,
-    MonkeyInfo,
-    Monkeys,
-)
+from api import *
 
 """
 the mighty main of the afek the mighty pytzov founder
@@ -96,8 +85,8 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
 
 
 # ballons
-CURRENT_MAX_BLOON = api.EcoBloons.GROUPED_PINK
-MIN_MOAB_CLASS = api.EcoBloons.BFB
+CURRENT_MAX_BLOON = EcoBloons.GROUPED_PINK
+MIN_MOAB_CLASS = EcoBloons.BFB
 
 MAX_QUEUE_SIZE = 5
 
@@ -157,7 +146,7 @@ class MyBot(ArazimWarsBot):
         self.defence = self.context.get_mode() == GameMode.DEFENSE
         self.economy_saving = 0
         self.monkeys_saving = 0
-        self.round = 0
+        self.round = 1
         self.monkeys: list[MonkeyInfo] = []
         self.monkeys_spending_roundly = 0
         self.do_next_action = self.progression_handler()
@@ -175,10 +164,10 @@ class MyBot(ArazimWarsBot):
             self.round += 1
 
     def get_economy_budget(self) -> int:
-        return self.economy_badget
+        return self.economy_budget
 
     def get_monkey_budget(self) -> int:
-        return self.monkey_badget
+        return self.monkey_budget
 
     def get_player_index(self) -> int:
         return self.context.get_current_player_index()
@@ -189,10 +178,11 @@ class MyBot(ArazimWarsBot):
         while index < players_num and self.context.get_player_health(index) == 0:
             index += 1
         if index != players_num:
-            return players_num
+            return index
         return players_num
 
     def run(self) -> None:
+        self.update_round()
         self.handle_targets()
         self.manage_budget()
         self.monkeys_spending_roundly = 0
@@ -217,20 +207,20 @@ class MyBot(ArazimWarsBot):
         manging the budget and spliting him pytzovly
         """
         if self.defence:
-            self.monkey_badget = self.context.get_money()
+            self.monkey_budget = self.context.get_money()
             return
         if self.round > 1:
-            self.monkey_badget = self.monkeys_saving + int(
+            self.monkey_budget = self.monkeys_saving + int(
                 self.context.get_eco() * 0.40
             )
-            self.economy_badget = (
+            self.economy_budget = (
                 self.monkeys_saving
                 + self.context.get_eco()
                 - int(self.context.get_eco() * 0.40)
             )
         else:
-            self.monkey_badget = int(self.context.get_money() * 0.9)
-            self.economy_badget = self.context.get_money() - int(
+            self.monkey_budget = int(self.context.get_money() * 0.9)
+            self.economy_budget = self.context.get_money() - int(
                 self.context.get_money() * 0.9
             )
         return
@@ -443,14 +433,17 @@ class MyBot(ArazimWarsBot):
         Returns:
             Amount of budget not used.
         """
+        # self.context.log_info(f"round: {self.get_round()}")
+        # self.context.log_info(f"budget: {self.get_economy_budget()}")
         # Prevent sending if full
         if self.context.get_eco_queue_size() >= MAX_QUEUE_SIZE:
             return self.get_economy_budget()
 
-            # Get available bloons
+        # Get available bloons
         available_bloons = self.get_available_bloons(strategy)
         if not available_bloons:
             return self.get_economy_budget()
+        # self.context.log_info(f"2. Available bloons: {available_bloons}")
 
         # sort available bloons
         available_bloons = sorted(
@@ -459,16 +452,17 @@ class MyBot(ArazimWarsBot):
 
         # Send the bloon
         result = self.context.send_bloons(
-            self.get_player_index(), available_bloons[-1][0]
+            self.get_other_player_index(), available_bloons[-1][0]
         )
 
         # Return how much budget was used
-        if result == api.Result.OK:
+        if result == Result.OK:
+            # self.context.log_info("Successfully sent bloon")
             return self.get_economy_budget() - available_bloons[-1][1].cost
         else:
             return self.get_economy_budget()
 
-    def is_available(self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
+    def is_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if a bloon is available"""
         return (
             ecobloon[1].availability_round <= self.get_round()
@@ -476,7 +470,7 @@ class MyBot(ArazimWarsBot):
         )
 
     def is_latest_bloon_available(
-        self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]
+        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
     ) -> bool:
         """Returns if an ecobloon is available to be sent according to round and funds."""
         return (
@@ -484,7 +478,7 @@ class MyBot(ArazimWarsBot):
         )
 
     def is_latest_moab_available(
-        self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]
+        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
     ) -> bool:
         """Returns if an ecobloon is available and is a moab class."""
         return self.is_available(ecobloon) and ecobloon[0].value >= MIN_MOAB_CLASS.value
@@ -499,7 +493,7 @@ class MyBot(ArazimWarsBot):
             case ECONOMY_ECONOMY.DAMAGE:
                 filter_func = self.is_latest_moab_available
 
-        return dict(filter(filter_func, api.ECO_BLOONS_INFO.items()))
+        return dict(filter(filter_func, ECO_BLOONS_INFO.items()))
 
     #####EMOTE######
     def handle_emotes(self) -> None:
