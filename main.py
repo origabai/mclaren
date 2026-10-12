@@ -215,6 +215,10 @@ class MyBot(ArazimWarsBot):
         self.map = self.context.get_map()
         self.actions_complete = False
 
+        self.players_alive = 0
+        self.emote_timer = 0
+        self.spam_timer = 0
+
     def get_round(self) -> int:
         return self.round
 
@@ -524,13 +528,27 @@ class MyBot(ArazimWarsBot):
         emote handling
         """
 
-        self.emote_index += 1
-        if random.randint(0, 60 * 4) == 0:
-            self.emote_wait = True
+        self.spam_timer -= 1
 
-        if self.emote_index % 120 == 0:
-            self.emote_wait = False
-
-        if self.emote_wait:
+        if self.spam_timer >= 0:
+            self.context.display_emote(EMOTES[self.spam_timer % len(EMOTES)])
             return
-        self.context.display_emote(EMOTES[(self.emote_index) % len(EMOTES)])
+
+        curr_alive = 0
+
+        for i in range(self.context.get_player_count()):
+            if self.context.is_player_active(i):
+                curr_alive += 1
+
+        if self.emote_timer <= 0:
+            self.context.display_emote(Emote.COOL)
+        self.emote_timer -= 1
+
+        if curr_alive < self.players_alive:
+            self.context.display_emote(Emote.LAUGHING)
+            self.emote_timer = 60 * 4
+
+        self.players_alive = curr_alive
+
+        if random.randint(0, 60 * 10) == 0:
+            self.spam_timer = 60 * 4
