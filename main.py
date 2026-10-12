@@ -1,3 +1,4 @@
+import math
 import random
 from enum import Enum
 
@@ -204,9 +205,11 @@ class MyBot(ArazimWarsBot):
         return self.context.get_current_player_index()
 
     def get_other_player_index(self) -> int:
-        index = 0
+        index = 0 if self.context.get_current_player_index() != 0 else 1
         players_num = self.context.get_player_count()
-        while index < players_num and self.context.get_player_health(index) == 0:
+        while (
+            index < players_num and self.context.get_player_health(index) == 0
+        ) or index == self.context.get_current_player_index():
             index += 1
         if index != players_num:
             return index
@@ -265,22 +268,12 @@ class MyBot(ArazimWarsBot):
         if self.defence:
             self.monkey_budget = self.context.get_money()
             return
-        if self.round > 1:
-            self.monkey_budget = self.monkeys_saving + int(
-                self.context.get_eco() * 0.40
-            )
-            self.economy_budget = (
-                self.monkeys_saving
-                + self.context.get_eco()
-                - int(self.context.get_eco() * 0.40)
-            )
-        else:
-            self.monkey_budget = int(self.context.get_money() * 0.9)
-            self.economy_budget = self.context.get_money() - int(
-                self.context.get_money() * 0.9
-            )
-        return
-        # total, cammo, lead= self.get_board_status()
+        self.monkeys_saving = self.context.get_money() - self.context.get_eco()
+        monkey_add = int(
+            self.context.get_eco() * (0.3 + math.sqrt(1 / self.round) * 0.7)
+        )
+        self.monkey_budget = self.monkeys_saving + monkey_add
+        self.economy_budget = self.economy_saving + self.context.get_eco() - monkey_add
 
     ############targets sections################
     def handle_targets(self) -> None:
