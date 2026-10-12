@@ -4,6 +4,8 @@ from helpers import ECONOMY_ECONOMY
 CURRENT_MAX_BLOON = api.EcoBloons.GROUPED_PINK
 MIN_MOAB_CLASS = api.EcoBloons.MOAB
 
+MAX_QUEUE_SIZE = 5
+
 def get_economy_budget() -> int:
     return 500
 
@@ -20,6 +22,9 @@ def send_bloons(strategy: ECONOMY_ECONOMY) -> int:
     Returns:
         Amount of budget not used.
     """
+    # Prevent sending if full
+    if self.context.get_eco_queue_size() >= MAX_QUEUE_SIZE:
+        return get_economy_budget()
 
     match strategy:
         case ECONOMY_ECONOMY.ECONOMY:
