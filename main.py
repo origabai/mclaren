@@ -25,9 +25,6 @@ EMOTES = [
     # Emote.THUMBS_DOWN,
     # Emote.THUMBS_UP,
 ]
-STRENGTH = []
-
-# targets
 
 
 def can_monkey_shoot_lead(monkey: MonkeyInfo) -> bool:
@@ -56,10 +53,7 @@ def can_monkey_see_camo(monkey: MonkeyInfo) -> bool:
     if monkey.kind == Monkeys.NINJA_MONKEY:
         return True
 
-    if monkey.kind == Monkeys.SNIPER_MONKEY and monkey.bottom_level >= 2:
-        return True
-
-    return False
+    return bool(monkey.kind == Monkeys.SNIPER_MONKEY and monkey.bottom_level >= 2)
 
 
 def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
@@ -192,15 +186,15 @@ class MyBot(ArazimWarsBot):
             self.economy_saving = self.send_bloons(ECONOMY_ECONOMY.ECONOMY)
         self.handle_emotes()
 
-    def get_board_status(self) -> tuple[int, int]:
-        """calculate the cammo baloons strength and the lead baloons strength and the total baloons strength
-        (total, cammo, lead)"""
-        cammo = 0
-        lead = 0
-        total = 0
-        bloons = self.context.get_bloons()
-        return  # TODO
-        # for bloon in bloons :
+    # def get_board_status(self) -> tuple[int, int]:
+    #     """calculate the cammo baloons strength and the lead baloons strength and the total baloons strength
+    #     (total, cammo, lead)"""
+    #     cammo = 0
+    #     lead = 0
+    #     total = 0
+    #     bloons = self.context.get_bloons()
+    #     return  # TODO
+    # for bloon in bloons :
 
     def manage_budget(self) -> None:
         """
@@ -215,7 +209,7 @@ class MyBot(ArazimWarsBot):
             )
             self.economy_budget = (
                 self.monkeys_saving
-                + self.context.get_eco()
+                + int(self.context.get_eco())
                 - int(self.context.get_eco() * 0.40)
             )
         else:
