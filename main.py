@@ -157,7 +157,9 @@ class ECONOMY_ECONOMY(Enum):
     ECONOMY = 0
     DAMAGE = 1
     CUSTOM = 2
-    CAMMO_LEAD = 3
+    LEAD = 3
+    CAMO = 4
+    CAMMO_LEAD = 5
 
 
 class MyBot(ArazimWarsBot):
@@ -468,6 +470,19 @@ class MyBot(ArazimWarsBot):
                 filter_func = self.is_latest_lead_available
 
         return dict(filter(filter_func, ECO_BLOONS_INFO.items()))
+
+    def is_player_camo_lead(self, num: int) -> tuple[bool, bool, bool]:
+        monkeys = self.context.get_player_monkeys(num)
+        lead = False
+        camo = False
+        camo_lead = False
+        for monkey in monkeys:
+            is_camo = can_monkey_see_camo(monkey)
+            is_lead = can_monkey_shoot_lead(monkey)
+            lead = lead or is_lead
+            camo = camo or is_camo
+            camo_lead = camo_lead or (is_camo and is_lead)
+        return lead, camo, camo_lead
 
     #####EMOTE######
     def handle_emotes(self) -> None:
