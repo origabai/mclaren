@@ -7,7 +7,10 @@ authors = [
     { name = "idozipo", email = "idozipori08@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "mypy>=2.4.0",
+    "ruff>=0.17.0",
+]
 
 [project.scripts]
 mclaren = "mclaren:main"
