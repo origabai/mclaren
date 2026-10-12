@@ -15,23 +15,29 @@ def get_player_index() -> int:
     return 0
 
 def send_bloons():
-    pass
+    send_latest_available_bloon()
 
-def send_latest_available_bloon():
+def send_latest_available_bloon() -> int:
     """ Basic strategy for sending latest bloon available. """
+    # Get available bloons
     available_bloons = get_available_bloons()
-
     if not available_bloons:
-        return
+        return get_economy_budget()
 
+    # sort available bloons
     available_bloons = sorted(available_bloons.items(), key=lambda x: x[1].availability_round)
-    # print(available_bloons[-1])
 
-    for _ in range(5):
-        self.context.send_bloons(
-            get_player_index(),
-            available_bloons[-1][0]
-        )
+    # Send the bloon
+    result = self.context.send_bloons(
+        get_player_index(),
+        available_bloons[-1][0]
+    )
+
+    # Return how much budget was used
+    if result == api.Result.OK:
+        return get_economy_budget() - available_bloons[-1][1].cost
+    else:
+        return get_economy_budget()
 
 def is_bloon_available(ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
     """ Returns if an ecobloon is available to be sent according to round and funds. """
