@@ -87,6 +87,7 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
 
 # ballons
 CURRENT_MAX_BLOON = EcoBloons.GROUPED_PINK
+LEAD_MAX_BLOON = EcoBloons.SPACED_LEAD
 MIN_MOAB_CLASS = EcoBloons.BFB
 
 MAX_QUEUE_SIZE = 5
@@ -180,10 +181,6 @@ class MyBot(ArazimWarsBot):
         self.action_index = 0
         self.map = self.context.get_map()
         self.actions_complete = False
-
-        self.players_alive = 0
-        self.emote_timer = 0
-        self.spam_timer = 0
 
     def get_round(self) -> int:
         return self.round
@@ -414,7 +411,11 @@ class MyBot(ArazimWarsBot):
 
         # Send the bloon
         result = self.context.send_bloons(
-            self.targeted_enemy_index, available_bloons[-1][0]
+            self.targeted_enemy_index,
+            available_bloons[-1][0],
+            is_camo=(
+                self.is_camo_available() and strategy == ECONOMY_ECONOMY.CAMMO_LEAD
+            ),
         )
 
         # Return how much budget was used
@@ -423,6 +424,9 @@ class MyBot(ArazimWarsBot):
             return self.get_economy_budget() - available_bloons[-1][1].cost
         else:
             return self.get_economy_budget()
+
+    def is_camo_available(self):
+        return self.get_round() >= 8
 
     def is_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if a bloon is available"""
@@ -439,6 +443,12 @@ class MyBot(ArazimWarsBot):
             self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
         )
 
+    def is_latest_lead_available(
+        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
+    ) -> bool:
+        """Returns if an ecobloon is available to be sent according to round and funds."""
+        return self.is_available(ecobloon) and ecobloon[0].value <= LEAD_MAX_BLOON.value
+
     def is_latest_moab_available(
         self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
     ) -> bool:
@@ -454,6 +464,8 @@ class MyBot(ArazimWarsBot):
                 filter_func = self.is_latest_bloon_available
             case ECONOMY_ECONOMY.DAMAGE:
                 filter_func = self.is_latest_moab_available
+            case ECONOMY_ECONOMY.CAMMO_LEAD:
+                filter_func = self.is_latest_lead_available
 
         return dict(filter(filter_func, ECO_BLOONS_INFO.items()))
 
@@ -463,27 +475,13 @@ class MyBot(ArazimWarsBot):
         emote handling
         """
 
-        self.spam_timer -= 1
+        self.emote_index += 1
+        if random.randint(0, 60 * 4) == 0:
+            self.emote_wait = True
 
-        if self.spam_timer >= 0:
-            self.context.display_emote(EMOTES[self.spam_timer % len(EMOTES)])
+        if self.emote_index % 120 == 0:
+            self.emote_wait = False
+
+        if self.emote_wait:
             return
-
-        curr_alive = 0
-
-        for i in range(self.context.get_player_count()):
-            if self.context.is_player_active(i):
-                curr_alive += 1
-
-        if self.emote_timer <= 0:
-            self.context.display_emote(Emote.COOL)
-        self.emote_timer -= 1
-
-        if curr_alive < self.players_alive:
-            self.context.display_emote(Emote.LAUGHING)
-            self.emote_timer = 60 * 4
-
-        self.players_alive = curr_alive
-
-        if random.randint(0, 60 * 10) == 0:
-            self.spam_timer = 60 * 4
+        self.context.display_emote(EMOTES[(self.emote_index) % len(EMOTES)])
