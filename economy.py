@@ -3,9 +3,6 @@ from helpers import ECONOMY_ECONOMY
 
 CURRENT_MAX_BLOON = api.EcoBloons.GROUPED_PINK
 
-def main():
-    send_latest_available_bloon()
-
 def get_economy_budget() -> int:
     return 500
 
