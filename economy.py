@@ -2,7 +2,7 @@ import api
 from helpers import ECONOMY_ECONOMY
 
 CURRENT_MAX_BLOON = api.EcoBloons.GROUPED_PINK
-MIN_MOAB_CLASS = api.EcoBloons.MOAB
+MIN_MOAB_CLASS = api.EcoBloons.BFB
 
 MAX_QUEUE_SIZE = 5
 
