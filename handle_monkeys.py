@@ -25,35 +25,35 @@ class MyBot(ArazimWarsBot):
         Makes any number of predefined moves until it runs out of money
         """
         INITIAL_ACTIONS = [
-            self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("ON_START")),
-            self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            self.upgrade_monkey(-2, False),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, True),
-            self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-2, True),
-            self.upgrade_monkey(-1, True),
-            self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            self.upgrade_monkey(-1, False),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, False),
-            self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, True)
+            lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("ON_START")),
+            lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-2, False),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-2, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-1, False),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, False),
+            lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True)
         ]
         REPEAT_ACTIONS = [
-            self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            self.upgrade_monkey(-1, False),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, True),
-            self.upgrade_monkey(-1, False)
+            lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-1, False),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, False)
         ]
 
         while INITIAL_ACTIONS:
@@ -82,7 +82,7 @@ class MyBot(ArazimWarsBot):
     def place_monkey(self, monkey: Monkeys, position: tuple[float, float]) -> None:
         result = self.context.place_monkey(monkey, position)
         if result == Exceptions.OK:
-            self.monkeys.append(MonkeyInfo(Monkeys, position, 0, 0, 0)) # MONKEY DIRECTION NOT KNOWN FOR FIRST FRAME
+            self.monkeys.append(MonkeyInfo(monkey, position, 0, 0, 0)) # MONKEY DIRECTION NOT KNOWN FOR FIRST FRAME
             return True
         elif (
             result == Exceptions.OUT_OF_MAP
