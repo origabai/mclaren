@@ -174,6 +174,9 @@ class MyBot(ArazimWarsBot):
         self.emote_index = 0
         self.emote_wait = False
 
+        self.targeted_enemy_index = self.get_other_player_index()
+        self.next_enemy_index = self.get_other_player_index()
+
         self.action_index = 0
         self.map = self.context.get_map()
         self.actions_complete = False
@@ -208,6 +211,19 @@ class MyBot(ArazimWarsBot):
             return index
         return players_num
 
+    def get_enemy_bloons(self) -> list[int]:
+        return [x.eco_from for x in self.context.get_bloons() if x.eco_from is not None]
+
+    def update_enemy_index(self):
+        if self.context.get_player_health(self.targeted_enemy_index) <= 0:
+            self.targeted_enemy_index = self.next_enemy_index
+
+        if enemy_bloons := self.get_enemy_bloons():
+            self.next_enemy_index = enemy_bloons[0]
+
+        if self.next_enemy_index == self.targeted_enemy_index:
+            self.next_enemy_index = self.get_other_player_index()
+
     def _get_action_price(self, action: list) -> int:
         """Get the price of an action"""
         if action[0] == "UPGRADE":
@@ -235,6 +251,7 @@ class MyBot(ArazimWarsBot):
 
     def run(self) -> None:
         self.update_round()
+        self.update_enemy_index()
         self.handle_targets()
         self.manage_budget()
         self.monkeys_spending_roundly = 0
@@ -393,7 +410,7 @@ class MyBot(ArazimWarsBot):
 
         # Send the bloon
         result = self.context.send_bloons(
-            self.get_other_player_index(), available_bloons[-1][0]
+            self.targeted_enemy_index, available_bloons[-1][0]
         )
 
         # Return how much budget was used
