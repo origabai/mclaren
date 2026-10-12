@@ -77,5 +77,58 @@ def better_handle_monkey_targets(self) -> None:
 
         for bloon in targets:
             if can_monkey_shoot_bloon(monkey, bloon):
-                self.context.target_bloon(monkey_index, targets[0].index)
+                self.context.target_bloon(monkey_index, bloon.index)
+                break
+
+def even_better_handle_targets(self) -> None:
+    """
+    1. only shoot bloons you can target
+    2. prioritize camo/lead if you can shoot it
+    """
+
+    for monkey_index in range(self.monkey_count):
+        targets: list[BloonInfo] = self.context.get_monkey_targets(monkey_index)
+        monkey = self.monkeys[monkey_index]
+
+        found_target = False
+        
+        if can_monkey_see_camo(monkey) and can_monkey_shoot_lead(monkey):
+            # the monkey can shoot camo lead! prioritize them
+            
+            for bloon in targets:
+                if bloon.is_camo and bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
+                    self.context.target_bloon(monkey_index, bloon.index)
+                    found_target = True
+                    break
+            
+            if found_target:
+                continue
+
+        if can_monkey_shoot_lead(monkey):
+            # shoot lead if we can
+            for bloon in targets:
+                if bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
+                    self.context.target_bloon(monkey_index, bloon.index)
+                    found_target = True
+                    break
+            
+            if found_target:
+                continue
+
+        if can_monkey_see_camo(monkey):
+            # shoot camo if we can
+            for bloon in targets:
+                if bloon.is_camo and can_monkey_shoot_bloon(monkey, bloon):
+                    self.context.target_bloon(monkey_index, bloon.index)
+                    found_target = True
+                    break
+            
+            if found_target:
+                continue
+
+        # our monkey is an efes that cant do anything. so just shoot the first bloon
+            
+        for bloon in targets:
+            if can_monkey_shoot_bloon(monkey, bloon):
+                self.context.target_bloon(monkey_index, bloon.index)
                 break
