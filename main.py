@@ -2,7 +2,17 @@ import random
 from enum import Enum
 
 import api
-from api import ArazimWarsBot, BloonInfo, Bloons, Emote, Exceptions, GameMode, Maps, MonkeyInfo, Monkeys
+from api import (
+    ArazimWarsBot,
+    BloonInfo,
+    Bloons,
+    Emote,
+    Exceptions,
+    GameMode,
+    Maps,
+    MonkeyInfo,
+    Monkeys,
+)
 
 """
 the mighty main of the afek the mighty pytzov founder
@@ -75,7 +85,11 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
     if bloon.is_camo:
         can_shoot &= can_monkey_see_camo(monkey)
 
-    if bloon.kind == Bloons.ZEBRA or bloon.kind == Bloons.BLACK and monkey.kind == Monkeys.BOMB_TOWER:
+    if (
+        bloon.kind == Bloons.ZEBRA
+        or bloon.kind == Bloons.BLACK
+        and monkey.kind == Monkeys.BOMB_TOWER
+    ):
         can_shoot = False
 
     return can_shoot
@@ -154,7 +168,10 @@ class MyBot(ArazimWarsBot):
         return self.round
 
     def update_round(self) -> None:
-        if self.context.get_round_times()[self.round + 1] <= self.context.get_current_steps():
+        if (
+            self.context.get_round_times()[self.round + 1]
+            <= self.context.get_current_steps()
+        ):
             self.round += 1
 
     def get_economy_budget(self) -> int:
@@ -203,11 +220,19 @@ class MyBot(ArazimWarsBot):
             self.monkey_badget = self.context.get_money()
             return
         if self.round > 1:
-            self.monkey_badget = self.monkeys_saving + int(self.context.get_eco() * 0.40)
-            self.economy_badget = self.monkeys_saving + self.context.get_eco() - int(self.context.get_eco() * 0.40)
+            self.monkey_badget = self.monkeys_saving + int(
+                self.context.get_eco() * 0.40
+            )
+            self.economy_badget = (
+                self.monkeys_saving
+                + self.context.get_eco()
+                - int(self.context.get_eco() * 0.40)
+            )
         else:
             self.monkey_badget = int(self.context.get_money() * 0.9)
-            self.economy_badget = self.context.get_money() - int(self.context.get_money() * 0.9)
+            self.economy_badget = self.context.get_money() - int(
+                self.context.get_money() * 0.9
+            )
         return
         # total, cammo, lead= self.get_board_status()
 
@@ -228,7 +253,11 @@ class MyBot(ArazimWarsBot):
                 # the monkey can shoot camo lead! prioritize them
 
                 for bloon in targets:
-                    if bloon.is_camo and bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
+                    if (
+                        bloon.is_camo
+                        and bloon.kind == Bloons.LEAD
+                        and can_monkey_shoot_bloon(monkey, bloon)
+                    ):
                         self.context.target_bloon(monkey_index, bloon.index)
                         found_target = True
                         break
@@ -239,7 +268,9 @@ class MyBot(ArazimWarsBot):
             if can_monkey_shoot_lead(monkey):
                 # shoot lead if we can
                 for bloon in targets:
-                    if bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
+                    if bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(
+                        monkey, bloon
+                    ):
                         self.context.target_bloon(monkey_index, bloon.index)
                         found_target = True
                         break
@@ -271,31 +302,61 @@ class MyBot(ArazimWarsBot):
         Makes any number of predefined moves until it runs out of money
         """
         INITIAL_ACTIONS = [
-            (lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("ON_START")), 200),
-            (lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("STRATEGIC")), 200),
+            (
+                lambda: self.place_monkey(
+                    Monkeys.DART_MONKEY, self.get_next_coordinate("ON_START")
+                ),
+                200,
+            ),
+            (
+                lambda: self.place_monkey(
+                    Monkeys.DART_MONKEY, self.get_next_coordinate("STRATEGIC")
+                ),
+                200,
+            ),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 2, False), 140),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 90),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 160),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 500),
-            (lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")), 500),
+            (
+                lambda: self.place_monkey(
+                    Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")
+                ),
+                500,
+            ),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 300),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 250),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 700),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 2, True), 1900),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 3000),
-            (lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")), 3000),
+            (
+                lambda: self.place_monkey(
+                    Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")
+                ),
+                3000,
+            ),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 3000),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 4000),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, False), 800),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, False), 1200),
-            (lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")), 500),
+            (
+                lambda: self.place_monkey(
+                    Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")
+                ),
+                500,
+            ),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 300),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 250),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 700),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 3000),
         ]
         REPEAT_ACTIONS = [
-            (lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")), 3000),
+            (
+                lambda: self.place_monkey(
+                    Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")
+                ),
+                3000,
+            ),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 3000),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, True), 4000),
             (lambda: self.upgrade_monkey(len(self.monkeys) - 1, False), 800),
@@ -305,7 +366,10 @@ class MyBot(ArazimWarsBot):
         while INITIAL_ACTIONS:
             while True:
                 next_move_budget = INITIAL_ACTIONS[0][1]
-                if next_move_budget + self.monkeys_spending_roundly > self.get_monkey_budget():
+                if (
+                    next_move_budget + self.monkeys_spending_roundly
+                    > self.get_monkey_budget()
+                ):
                     yield
                 else:
                     break
@@ -316,7 +380,10 @@ class MyBot(ArazimWarsBot):
         while True:
             while True:
                 next_move_budget = REPEAT_ACTIONS[0][1]
-                if next_move_budget + self.monkeys_spending_roundly > self.get_monkey_budget():
+                if (
+                    next_move_budget + self.monkeys_spending_roundly
+                    > self.get_monkey_budget()
+                ):
                     yield
                 else:
                     break
@@ -329,7 +396,9 @@ class MyBot(ArazimWarsBot):
     def place_monkey(self, monkey: Monkeys, position: tuple[float, float]) -> None:
         result = self.context.place_monkey(monkey, position)
         if result == Exceptions.OK:
-            self.monkeys.append(MonkeyInfo(monkey, position, 0, 0, 0))  # MONKEY DIRECTION NOT KNOWN FOR FIRST FRAME
+            self.monkeys.append(
+                MonkeyInfo(monkey, position, 0, 0, 0)
+            )  # MONKEY DIRECTION NOT KNOWN FOR FIRST FRAME
             return True
         elif (
             result == Exceptions.OUT_OF_MAP
@@ -355,7 +424,9 @@ class MyBot(ArazimWarsBot):
         if PLACING_ORDERS[map][type]:
             return PLACING_ORDERS[map][type].pop(0)
         else:
-            available_types = [k for k, v in PLACING_ORDERS[map].items() if v and k != type]
+            available_types = [
+                k for k, v in PLACING_ORDERS[map].items() if v and k != type
+            ]
         if not available_types:
             return [0, 0]  # No positions left anywhere
         rand_type = random.choice(available_types)
@@ -382,10 +453,14 @@ class MyBot(ArazimWarsBot):
             return self.get_economy_budget()
 
         # sort available bloons
-        available_bloons = sorted(available_bloons.items(), key=lambda x: x[1].availability_round)
+        available_bloons = sorted(
+            available_bloons.items(), key=lambda x: x[1].availability_round
+        )
 
         # Send the bloon
-        result = self.context.send_bloons(self.get_player_index(), available_bloons[-1][0])
+        result = self.context.send_bloons(
+            self.get_player_index(), available_bloons[-1][0]
+        )
 
         # Return how much budget was used
         if result == api.Result.OK:
@@ -395,13 +470,22 @@ class MyBot(ArazimWarsBot):
 
     def is_available(self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
         """Returns if a bloon is available"""
-        return ecobloon[1].availability_round <= self.get_round() and ecobloon[1].cost <= self.get_economy_budget()
+        return (
+            ecobloon[1].availability_round <= self.get_round()
+            and ecobloon[1].cost <= self.get_economy_budget()
+        )
 
-    def is_latest_bloon_available(self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
+    def is_latest_bloon_available(
+        self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]
+    ) -> bool:
         """Returns if an ecobloon is available to be sent according to round and funds."""
-        return self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
+        return (
+            self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
+        )
 
-    def is_latest_moab_available(self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
+    def is_latest_moab_available(
+        self, ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]
+    ) -> bool:
         """Returns if an ecobloon is available and is a moab class."""
         return self.is_available(ecobloon) and ecobloon[0].value >= MIN_MOAB_CLASS.value
 
