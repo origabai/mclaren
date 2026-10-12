@@ -1,6 +1,7 @@
 import math
 import random
 from enum import Enum
+from typing import Any
 
 from api import *
 
@@ -217,7 +218,7 @@ class MyBot(ArazimWarsBot):
     def get_enemy_bloons(self) -> list[int]:
         return [x.eco_from for x in self.context.get_bloons() if x.eco_from is not None]
 
-    def update_enemy_index(self):
+    def update_enemy_index(self) -> None:
         if self.context.get_player_health(self.targeted_enemy_index) <= 0:
             self.targeted_enemy_index = self.next_enemy_index
 
@@ -227,7 +228,7 @@ class MyBot(ArazimWarsBot):
         if self.next_enemy_index == self.targeted_enemy_index:
             self.next_enemy_index = self.get_other_player_index()
 
-    def _get_action_price(self, action: list) -> int:
+    def _get_action_price(self, action: list[Any]) -> int:
         """Get the price of an action"""
         if action[0] == "UPGRADE":
             monkey_to_upgrade = self.monkeys[action[1]]
@@ -246,7 +247,7 @@ class MyBot(ArazimWarsBot):
         else:
             return MONKEY_COSTS[MONKEY_NAMES[action[0]]]
 
-    def _perform_action(self, action: list) -> bool:
+    def _perform_action(self, action: list[Any]) -> bool:
         if action[0] == "UPGRADE":
             return self.upgrade_monkey(action[1], action[2])
         else:
@@ -375,7 +376,7 @@ class MyBot(ArazimWarsBot):
         result = self.context.upgrade_monkey(monkey_index, top_row)
         return result != Exceptions.NOT_ENOUGH_MONEY
 
-    def handle_monkeys(self):
+    def handle_monkeys(self) -> None:
         if self.action_index >= len(PLACING_LAYOUTS[self.map]):
             self.actions_complete = True
             return
@@ -407,31 +408,29 @@ class MyBot(ArazimWarsBot):
         # self.context.log_info(f"2. Available bloons: {available_bloons}")
 
         # sort available bloons
-        available_bloons = sorted(
+        sorted_bloons = sorted(
             available_bloons.items(), key=lambda x: x[1].availability_round
+        )
+
+        is_camo = self.is_camo_available() and (
+            strategy == ECONOMY_ECONOMY.CAMMO_LEAD or strategy == ECONOMY_ECONOMY.CAMO
         )
 
         # Send the bloon
         result = self.context.send_bloons(
             self.targeted_enemy_index,
-            available_bloons[-1][0],
-            is_camo=(
-                self.is_camo_available()
-                and (
-                    strategy == ECONOMY_ECONOMY.CAMMO_LEAD
-                    or strategy == ECONOMY_ECONOMY.CAMO
-                )
-            ),
+            sorted_bloons[-1][0],
+            is_camo=is_camo,
         )
 
         # Return how much budget was used
         if result == Result.OK:
             # self.context.log_info("Successfully sent bloon")
-            return self.get_economy_budget() - available_bloons[-1][1].cost
+            return self.get_economy_budget() - sorted_bloons[-1][1].cost
         else:
             return self.get_economy_budget()
 
-    def is_camo_available(self):
+    def is_camo_available(self) -> bool:
         return self.get_round() >= 8
 
     def is_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
@@ -461,7 +460,9 @@ class MyBot(ArazimWarsBot):
         """Returns if an ecobloon is available and is a moab class."""
         return self.is_available(ecobloon) and ecobloon[0].value >= MIN_MOAB_CLASS.value
 
-    def get_available_bloons(self, strategy: ECONOMY_ECONOMY):
+    def get_available_bloons(
+        self, strategy: ECONOMY_ECONOMY
+    ) -> dict[EcoBloons, EcoBloonsInfo]:
         """Returns a list of all available bloons according to the strategy."""
         filter_func = self.is_latest_bloon_available
 
