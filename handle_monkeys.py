@@ -18,6 +18,7 @@ class MyBot(ArazimWarsBot):
     def setup(self) -> None:
         self.monkeys: list[MonkeyInfo] = []
         self.monkeys_spending_roundly = 0
+        self.do_next_action = self.progression_handler()
 
     def progression_handler(self):
         """
@@ -115,9 +116,8 @@ class MyBot(ArazimWarsBot):
 
 
     def run(self) -> None:
-        do_next_action = self.progression_handler()
-        current_money = self._get_monkey_budget()
-        next(do_next_action)
+        
+        next(self.do_next_action)
 
     
 
