@@ -1,4 +1,3 @@
-import random
 
 from api import (
     MONKEY_COSTS,
@@ -9,7 +8,6 @@ from api import (
     MonkeyInfo,
     Monkeys,
 )
-
 
 PLACING_LAYOUTS = {
     Maps.TEMPLE: [
@@ -35,6 +33,10 @@ PLACING_LAYOUTS = {
         *([["UPGRADE", 8, False]] * 2),
         *([["UPGRADE", 9, True]] * 3),
         *([["UPGRADE", 9, False]] * 2),
+    ],
+    Maps.YELLOW_BRICK:
+    [
+        
     ]
 }
 
