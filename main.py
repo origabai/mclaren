@@ -1,7 +1,8 @@
+import random
 from enum import Enum
 
-from api import ArazimWarsBot, Emote, Exceptions, Monkeys
 import api
+from api import ArazimWarsBot, BloonInfo, Bloons, Emote, Exceptions, Maps, MonkeyInfo, Monkeys
 
 """
 the mighty main of the afek the mighty pytzov founder
@@ -10,12 +11,120 @@ author: afek the mighty pytzov founder
 
 
 # Only pick the cool emotes of course
-EMOTES = [Emote.NONE, Emote.COOL, Emote.LAUGHING, Emote.LOVE]
+EMOTES = [
+    # Emote.NONE,
+    Emote.ANGRY,
+    # Emote.COOL,
+    # Emote.CRYING,
+    Emote.FACEPALM,
+    # Emote.IDEA_THOUGHT,
+    # Emote.LAUGHING,
+    # Emote.LOVE,
+    Emote.POINTING,
+    # Emote.SHOCKED,
+    # Emote.SMILE,
+    # Emote.THUMBS_DOWN,
+    # Emote.THUMBS_UP,
+]
 STRENGTH = []
+
+# targets
+
+
+def can_monkey_shoot_lead(monkey: MonkeyInfo) -> bool:
+    """
+    check if the monkey can shoot lead
+    """
+    if monkey.kind == Monkeys.DART_MONKEY and monkey.top_level >= 4:
+        return True
+
+    if monkey.kind == Monkeys.SUPER_MONKEY and monkey.top_level >= 2:
+        return True
+
+    if monkey.kind == Monkeys.BOMB_TOWER:
+        return True
+
+    return monkey.kind == Monkeys.SNIPER_MONKEY and monkey.top_level >= 1
+
+
+def can_monkey_see_camo(monkey: MonkeyInfo) -> bool:
+    """
+    check if the monkey can see camo
+    """
+    if monkey.kind == Monkeys.DART_MONKEY and monkey.top_level >= 2:
+        return True
+
+    if monkey.kind == Monkeys.NINJA_MONKEY:
+        return True
+
+    if monkey.kind == Monkeys.SNIPER_MONKEY and monkey.bottom_level >= 2:
+        return True
+
+    return False
+
+
+def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
+    """
+    check if the monkey can shoot the bloon
+    """
+    can_shoot = True
+
+    if bloon.kind == Bloons.LEAD:
+        can_shoot &= can_monkey_shoot_lead(monkey)
+
+    if bloon.is_camo:
+        can_shoot &= can_monkey_see_camo(monkey)
+
+    if bloon.kind == Bloons.ZEBRA or bloon.kind == Bloons.BLACK and monkey.kind == Monkeys.BOMB_TOWER:
+        can_shoot = False
+
+    return can_shoot
+
+
+# ballons
 CURRENT_MAX_BLOON = api.EcoBloons.GROUPED_PINK
 MIN_MOAB_CLASS = api.EcoBloons.BFB
 
 MAX_QUEUE_SIZE = 5
+
+# monkeys
+
+PLACING_ORDERS = {
+    Maps.INTERCHANGE: {
+        "ON_START": [[255, 31], [302, 59], [92, 28], [97, 85]],
+        "STRATEGIC": [
+            [381, 303],
+            [53, 339],
+            [394, 361],
+            [32, 393],
+            [398, 417],
+            [383, 479],
+            [32, 287],
+            [33, 235],
+            [28, 471],
+            [408, 254],
+            [42, 180],
+            [48, 548],
+            [91, 588],
+        ],
+        "ON_END": [[409, 531], [425, 588], [264, 602], [206, 611]],
+    },
+    Maps.SHAPES: {
+        "ON_START": [[453, 335], [401, 334], [348, 334], [294, 334]],
+        "STRATEGIC": [
+            [201, 246],
+            [125, 408],
+            [123, 466],
+            [204, 140],
+            [95, 134],
+            [333, 122],
+            [316, 486],
+            [308, 599],
+            [122, 593],
+        ],
+        "ON_END": [[449, 443], [419, 497], [420, 556], [372, 595]],
+    },
+}
 
 
 class ECONOMY_ECONOMY(Enum):
@@ -35,6 +144,11 @@ class MyBot(ArazimWarsBot):
         self.economy_saving = 0
         self.monkeys_saving = 0
         self.round = 0
+        self.monkeys: list[MonkeyInfo] = []
+        self.monkeys_spending_roundly = 0
+        self.do_next_action = self.progression_handler()
+        self.emote_index = 0
+        self.emote_wait = False
 
     def get_round(self) -> int:
         return self.round
@@ -59,7 +173,8 @@ class MyBot(ArazimWarsBot):
         self.handle_monkeys()
         self.monkeys_saving = self.monkeys_spending_roundly
         if not self.defence:
-            self.economy_saving = self.send_baloons(ECONOMY_ECONOMY.ECONOMY)
+            self.economy_saving = self.send_bloons(ECONOMY_ECONOMY.ECONOMY)
+        self.handle_emotes()
 
     def get_board_status(self) -> tuple[int, int]:
         """calculate the cammo baloons strength and the lead baloons strength and the total baloons strength
@@ -88,12 +203,148 @@ class MyBot(ArazimWarsBot):
         # total, cammo, lead= self.get_board_status()
 
     ############targets sections################
-    def handle_targets(self):
-        pass
+    def handle_targets(self) -> None:
+        """
+        1. only shoot bloons you can target
+        2. prioritize camo/lead if you can shoot it
+        """
+
+        for monkey_index in range(self.monkey_count):
+            targets: list[BloonInfo] = self.context.get_monkey_targets(monkey_index)
+            monkey = self.monkeys[monkey_index]
+
+            found_target = False
+
+            if can_monkey_see_camo(monkey) and can_monkey_shoot_lead(monkey):
+                # the monkey can shoot camo lead! prioritize them
+
+                for bloon in targets:
+                    if bloon.is_camo and bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
+                        self.context.target_bloon(monkey_index, bloon.index)
+                        found_target = True
+                        break
+
+                if found_target:
+                    continue
+
+            if can_monkey_shoot_lead(monkey):
+                # shoot lead if we can
+                for bloon in targets:
+                    if bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
+                        self.context.target_bloon(monkey_index, bloon.index)
+                        found_target = True
+                        break
+
+                if found_target:
+                    continue
+
+            if can_monkey_see_camo(monkey):
+                # shoot camo if we can
+                for bloon in targets:
+                    if bloon.is_camo and can_monkey_shoot_bloon(monkey, bloon):
+                        self.context.target_bloon(monkey_index, bloon.index)
+                        found_target = True
+                        break
+
+                if found_target:
+                    continue
+
+            # our monkey is an efes that cant do anything. so just shoot the first bloon
+
+            for bloon in targets:
+                if can_monkey_shoot_bloon(monkey, bloon):
+                    self.context.target_bloon(monkey_index, bloon.index)
+                    break
 
     ############monkeys sections################
+    def progression_handler(self):
+        """
+        Makes any number of predefined moves until it runs out of money
+        """
+        INITIAL_ACTIONS = [
+            lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("ON_START")),
+            lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-2, False),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-2, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-1, False),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, False),
+            lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+        ]
+        REPEAT_ACTIONS = [
+            lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),
+            lambda: self.upgrade_monkey(-1, False),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, True),
+            lambda: self.upgrade_monkey(-1, False),
+        ]
+
+        while INITIAL_ACTIONS:
+            money = self.context.get_money()
+            action_success = INITIAL_ACTIONS[0]()
+            self.monkeys_spending_roundly = money - self.context.get_money()
+            if not action_success:
+                yield
+        repeat_actions_index = 0
+        while True:
+            money = self.context.get_money()
+            action_success = REPEAT_ACTIONS[repeat_actions_index]()
+            repeat_actions_index += 1
+            if repeat_actions_index >= len(REPEAT_ACTIONS):
+                repeat_actions_index = 0
+            self.monkeys_spending_roundly = money - self.context.get_money()
+            if not action_success:
+                yield
+
+    def place_monkey(self, monkey: Monkeys, position: tuple[float, float]) -> None:
+        result = self.context.place_monkey(monkey, position)
+        if result == Exceptions.OK:
+            self.monkeys.append(MonkeyInfo(monkey, position, 0, 0, 0))  # MONKEY DIRECTION NOT KNOWN FOR FIRST FRAME
+            return True
+        elif (
+            result == Exceptions.OUT_OF_MAP
+            or result == Exceptions.TOO_CLOSE_TO_BLOON_ROUTE
+            or result == Exceptions.TOO_CLOSE_TO_OTHER_MONKEY
+        ):
+            self.context.log_warning(f"Couldn't place monkey because of: {result}")
+            return result
+        elif result == Exceptions.NOT_ENOUGH_MONEY:
+            return False
+
+    def upgrade_monkey(self, monkey_index: int, top_row: bool) -> bool:
+        result = self.context.upgrade_monkey(monkey_index, top_row)
+        return result != Exceptions.NOT_ENOUGH_MONEY
+
+    def get_next_coordinate(self, type: str) -> list[float, float]:
+        """
+        Get the next free coordinate in the placing order given a placing order
+        """
+        map = self.context.get_map()
+        if PLACING_ORDERS[map][type]:
+            return PLACING_ORDERS[map][type].pop(0)
+        else:
+            available_types = [k for k, v in PLACING_ORDERS[map].items() if v and k != type]
+        if not available_types:
+            return [0, 0]  # No positions left anywhere
+        rand_type = random.choice(available_types)
+        return PLACING_ORDERS[map][rand_type].pop(0)
+
     def handle_monkeys(self):
-        pass
+        next(self.do_next_action)
 
     ############baloons sections################
     def send_bloons(self, strategy: ECONOMY_ECONOMY) -> int:
@@ -147,3 +398,20 @@ class MyBot(ArazimWarsBot):
                 filter_func = self.is_latest_moab_available
 
         return dict(filter(filter_func, api.ECO_BLOONS_INFO.items()))
+
+    #####EMOTE######
+    def handle_emotes(self) -> None:
+        """
+        emote handling
+        """
+
+        self.emote_index += 1
+        if random.randint(0, 60 * 4) == 0:
+            self.emote_wait = True
+
+        if self.emote_index % 120 == 0:
+            self.emote_wait = False
+
+        if self.emote_wait:
+            return
+        self.context.display_emote(EMOTES[(self.emote_index) % len(EMOTES)])
