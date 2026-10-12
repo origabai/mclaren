@@ -82,12 +82,10 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
     if bloon.is_camo:
         can_shoot &= can_monkey_see_camo(monkey)
 
-    if (
-        bloon.kind == Bloons.ZEBRA
-        or bloon.kind == Bloons.BLACK
-        and monkey.kind == Monkeys.BOMB_TOWER
-    ):
-        can_shoot = False
+    # if (
+    #     bloon.kind == Bloons.ZEBRA or bloon.kind == Bloons.BLACK
+    # ) and monkey.kind == Monkeys.BOMB_TOWER:
+    #     can_shoot = False
 
     return can_shoot
 
