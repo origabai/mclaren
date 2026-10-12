@@ -19,8 +19,8 @@ EMOTES = [
 
 class MyBot(ArazimWarsBot):
     def setup(self) -> None:
-        self.emote_index = 0
-        self.emote_wait = False
+        self.player_count = 0
+        self.emote_timer = 120
 
     def run(self) -> None:
         self.handle_emotes()
@@ -30,8 +30,14 @@ class MyBot(ArazimWarsBot):
         emote handling
         """
 
-        self.emote_index += 1
+        if self.emote_timer <= 0:
+            self.context.display_emote(Emote.COOL)
+        self.emote_timer -= 1
 
-        self.context.display_emote(EMOTES[(self.emote_index // 60) % len(EMOTES)])
-        
-        
+        curr_count = self.context.get_player_count()
+        if curr_count < self.player_count:
+            self.context.display_emote(Emote.LAUGHING)
+            self.emote_timer = 60 * 4
+
+        self.player_count = curr_count
+
