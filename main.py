@@ -1,6 +1,7 @@
 import math
 import random
 from enum import Enum
+from typing import Any
 
 from api import *
 
@@ -31,6 +32,7 @@ MONKEY_NAMES = {
     "Dart Monkey": Monkeys.DART_MONKEY,
     "Ninja Monkey": Monkeys.NINJA_MONKEY,
     "Super Monkey": Monkeys.SUPER_MONKEY,
+    "Tack Shooter": Monkeys.TACK_SHOOTER,
 }
 
 # targets
@@ -87,6 +89,7 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
 
 # ballons
 CURRENT_MAX_BLOON = EcoBloons.GROUPED_PINK
+LEAD_MAX_BLOON = EcoBloons.SPACED_LEAD
 MIN_MOAB_CLASS = EcoBloons.BFB
 
 MAX_QUEUE_SIZE = 5
@@ -125,28 +128,54 @@ PLACING_LAYOUTS = {
         ["Dart Monkey", 347, 233],
         ["Ninja Monkey", 241, 315],
         ["Ninja Monkey", 173, 455],
-        *([["UPGRADE", 0, True]] * 4),
+        *([["UPGRADE", 0, True]] * 2),
         ["Super Monkey", 246, 136],
-        *([["UPGRADE", 4, True]] * 3),
+        *([["UPGRADE", 4, True]] * 1),
+        *([["UPGRADE", 0, True]] * 2),
+        *([["UPGRADE", 4, True]] * 1),
         *([["UPGRADE", 2, True]] * 4),
         ["Super Monkey", 77, 302],
         *([["UPGRADE", 5, True]] * 2),
-        *([["UPGRADE", 5, False]] * 2),
         *([["UPGRADE", 3, True]] * 4),
         ["Super Monkey", 428, 358],
         *([["UPGRADE", 6, True]] * 2),
-        *([["UPGRADE", 6, False]] * 2),
         ["Super Monkey", 243, 509],
         *([["UPGRADE", 7, True]] * 2),
-        *([["UPGRADE", 7, False]] * 2),
         ["Super Monkey", 61, 128],
         *([["UPGRADE", 8, True]] * 2),
-        *([["UPGRADE", 8, False]] * 2),
         ["Super Monkey", 435, 123],
         *([["UPGRADE", 9, True]] * 2),
-        *([["UPGRADE", 9, False]] * 2),
         ["Super Monkey", 338, 434],
         *([["UPGRADE", 10, True]] * 2),
+    ],
+    Maps.INTERCHANGE: [
+        ["Dart Monkey", 116, 101],
+        *([["UPGRADE", 0, False]] * 1),
+        ["Dart Monkey", 348, 290],
+        ["Tack Shooter", 173, 251],
+        ["Ninja Monkey", 353, 482],
+        *([["UPGRADE", 0, True]] * 4),
+        ["Super Monkey", 57, 336],
+        *([["UPGRADE", 4, True]] * 3),
+        *([["UPGRADE", 2, True]] * 4),
+        ["Super Monkey", 376, 375],
+        *([["UPGRADE", 5, True]] * 2),
+        *([["UPGRADE", 5, False]] * 2),
+        *([["UPGRADE", 3, True]] * 4),
+        ["Super Monkey", 61, 168],
+        *([["UPGRADE", 6, True]] * 2),
+        *([["UPGRADE", 6, False]] * 2),
+        ["Super Monkey", 388, 199],
+        ["Super Monkey", 332, 78],
+        *([["UPGRADE", 7, True]] * 2),
+        *([["UPGRADE", 7, False]] * 2),
+        ["Super Monkey", 54, 480],
+        ["Super Monkey", 413, 290],
+        *([["UPGRADE", 8, True]] * 2),
+        *([["UPGRADE", 8, False]] * 2),
+        *([["UPGRADE", 9, True]] * 3),
+        *([["UPGRADE", 9, False]] * 2),
+        *([["UPGRADE", 10, True]] * 3),
         *([["UPGRADE", 10, False]] * 2),
     ],
 }
@@ -176,6 +205,7 @@ class MyBot(ArazimWarsBot):
         self.emote_index = 0
         self.emote_wait = False
         self.wait = 0
+        self.prev_health = 0
 
         self.targeted_enemy_index = self.get_other_player_index()
         self.next_enemy_index = self.get_other_player_index()
@@ -183,10 +213,6 @@ class MyBot(ArazimWarsBot):
         self.action_index = 0
         self.map = self.context.get_map()
         self.actions_complete = False
-
-        self.players_alive = 0
-        self.emote_timer = 0
-        self.spam_timer = 0
 
     def get_round(self) -> int:
         return self.round
@@ -231,7 +257,7 @@ class MyBot(ArazimWarsBot):
         else:
             return MONKEY_COSTS[MONKEY_NAMES[action[0]]]
 
-    def _perform_action(self, action: list) -> bool:
+    def _perform_action(self, action: list[Any]) -> bool:
         if action[0] == "UPGRADE":
             return self.upgrade_monkey(action[1], action[2])
         else:
@@ -266,10 +292,17 @@ class MyBot(ArazimWarsBot):
         if self.defence:
             self.monkey_budget = self.context.get_money()
             return
+
         self.monkeys_saving = self.context.get_money() - int(self.context.get_eco())
         monkey_add = int(self.context.get_eco() * (0.3 + math.sqrt(1 / self.round) * 0.7))
         self.monkey_budget = self.monkeys_saving + monkey_add
         self.economy_budget = self.economy_saving + int(self.context.get_eco()) - monkey_add
+
+        curr_health = self.context.get_player_health(self.get_player_index())
+        if curr_health < self.prev_health:
+            self.monkey_budget += self.economy_budget
+            self.economy_budget = 0
+        self.prev_health = curr_health
 
     ############targets sections################
     def handle_targets(self) -> None:
@@ -348,7 +381,7 @@ class MyBot(ArazimWarsBot):
         result = self.context.upgrade_monkey(monkey_index, top_row)
         return result != Exceptions.NOT_ENOUGH_MONEY
 
-    def handle_monkeys(self):
+    def handle_monkeys(self) -> None:
         if self.action_index >= len(PLACING_LAYOUTS[self.map]):
             self.actions_complete = True
             return
@@ -356,8 +389,9 @@ class MyBot(ArazimWarsBot):
         used_money = 0
         next_action = PLACING_LAYOUTS[self.map][self.action_index]
         if used_money + self._get_action_price(next_action) < budget:
-            self._perform_action(next_action)
-            self.action_index += 1
+            action_result = self._perform_action(next_action)
+            if action_result:
+                self.action_index += 1
 
     ############baloons sections################
     def send_bloons(self, strategy: ECONOMY_ECONOMY) -> int:
@@ -380,17 +414,28 @@ class MyBot(ArazimWarsBot):
         # self.context.log_info(f"2. Available bloons: {available_bloons}")
 
         # sort available bloons
-        available_bloons = sorted(available_bloons.items(), key=lambda x: x[1].availability_round)
+        sorted_bloons = sorted(available_bloons.items(), key=lambda x: x[1].availability_round)
+
+        is_camo = self.is_camo_available() and (
+            strategy == ECONOMY_ECONOMY.CAMMO_LEAD or strategy == ECONOMY_ECONOMY.CAMO
+        )
 
         # Send the bloon
-        result = self.context.send_bloons(self.targeted_enemy_index, available_bloons[-1][0])
+        result = self.context.send_bloons(
+            self.targeted_enemy_index,
+            sorted_bloons[-1][0],
+            is_camo=is_camo,
+        )
 
         # Return how much budget was used
         if result == Result.OK:
             # self.context.log_info("Successfully sent bloon")
-            return self.get_economy_budget() - available_bloons[-1][1].cost
+            return self.get_economy_budget() - sorted_bloons[-1][1].cost
         else:
             return self.get_economy_budget()
+
+    def is_camo_available(self) -> bool:
+        return self.get_round() >= 8
 
     def is_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if a bloon is available"""
@@ -400,19 +445,25 @@ class MyBot(ArazimWarsBot):
         """Returns if an ecobloon is available to be sent according to round and funds."""
         return self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
 
+    def is_latest_lead_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
+        """Returns if an ecobloon is available to be sent according to round and funds."""
+        return self.is_available(ecobloon) and ecobloon[0].value <= LEAD_MAX_BLOON.value
+
     def is_latest_moab_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if an ecobloon is available and is a moab class."""
         return self.is_available(ecobloon) and ecobloon[0].value >= MIN_MOAB_CLASS.value
 
-    def get_available_bloons(self, strategy: ECONOMY_ECONOMY):
+    def get_available_bloons(self, strategy: ECONOMY_ECONOMY) -> dict[EcoBloons, EcoBloonsInfo]:
         """Returns a list of all available bloons according to the strategy."""
         filter_func = self.is_latest_bloon_available
 
         match strategy:
-            case ECONOMY_ECONOMY.ECONOMY:
+            case ECONOMY_ECONOMY.ECONOMY | ECONOMY_ECONOMY.CAMO:
                 filter_func = self.is_latest_bloon_available
             case ECONOMY_ECONOMY.DAMAGE:
                 filter_func = self.is_latest_moab_available
+            case ECONOMY_ECONOMY.CAMMO_LEAD | ECONOMY_ECONOMY.LEAD:
+                filter_func = self.is_latest_lead_available
 
         return dict(filter(filter_func, ECO_BLOONS_INFO.items()))
 
@@ -472,27 +523,13 @@ class MyBot(ArazimWarsBot):
         emote handling
         """
 
-        self.spam_timer -= 1
+        self.emote_index += 1
+        if random.randint(0, 60 * 4) == 0:
+            self.emote_wait = True
 
-        if self.spam_timer >= 0:
-            self.context.display_emote(EMOTES[self.spam_timer % len(EMOTES)])
+        if self.emote_index % 120 == 0:
+            self.emote_wait = False
+
+        if self.emote_wait:
             return
-
-        curr_alive = 0
-
-        for i in range(self.context.get_player_count()):
-            if self.context.is_player_active(i):
-                curr_alive += 1
-
-        if self.emote_timer <= 0:
-            self.context.display_emote(Emote.COOL)
-        self.emote_timer -= 1
-
-        if curr_alive < self.players_alive:
-            self.context.display_emote(Emote.LAUGHING)
-            self.emote_timer = 60 * 4
-
-        self.players_alive = curr_alive
-
-        if random.randint(0, 60 * 10) == 0:
-            self.spam_timer = 60 * 4
+        self.context.display_emote(EMOTES[(self.emote_index) % len(EMOTES)])
