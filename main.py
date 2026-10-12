@@ -2,7 +2,7 @@ import random
 from enum import Enum
 
 import api
-from api import ArazimWarsBot, BloonInfo, Bloons, Emote, Exceptions, Maps, MonkeyInfo, Monkeys
+from api import ArazimWarsBot, BloonInfo, Bloons, Emote, Exceptions, GameMode, Maps, MonkeyInfo, Monkeys
 
 """
 the mighty main of the afek the mighty pytzov founder
@@ -140,7 +140,7 @@ class MyBot(ArazimWarsBot):
         self.monkey_levels: list[int] = []
         self.attempted_position = 0
         self.emote_index = 0
-        self.defence = False
+        self.defence = self.context.get_mode() == GameMode.DEFENSE
         self.economy_saving = 0
         self.monkeys_saving = 0
         self.round = 0
@@ -154,7 +154,7 @@ class MyBot(ArazimWarsBot):
         return self.round
 
     def update_round(self) -> None:
-        if self.context.self.get_round_times()[self.round + 1] <= self.context.get_current_steps():
+        if self.context.get_round_times()[self.round + 1] <= self.context.get_current_steps():
             self.round += 1
 
     def get_economy_budget(self) -> int:
@@ -165,6 +165,15 @@ class MyBot(ArazimWarsBot):
 
     def get_player_index(self) -> int:
         return self.context.get_current_player_index()
+
+    def get_other_player_index(self) -> int:
+        index = 0
+        players_num = self.context.get_player_count()
+        while index < players_num and self.context.get_player_health(index) == 0:
+            index += 1
+        if index != players_num:
+            return players_num
+        return players_num
 
     def run(self) -> None:
         self.handle_targets()
@@ -191,11 +200,11 @@ class MyBot(ArazimWarsBot):
         manging the budget and spliting him pytzovly
         """
         if self.defence:
-            self.monkey_badget = self.context.get_current_budget()
+            self.monkey_badget = self.context.get_money()
             return
         if self.round > 1:
             self.monkey_badget = self.monkeys_saving + int(self.context.get_eco() * 0.40)
-            self.economy_badget = self.monkeys_saving + self.context - int(self.context.get_eco() * 0.40)
+            self.economy_badget = self.monkeys_saving + self.context.get_eco() - int(self.context.get_eco() * 0.40)
         else:
             self.monkey_badget = int(self.context.get_money() * 0.9)
             self.economy_badget = self.context.get_money() - int(self.context.get_money() * 0.9)
