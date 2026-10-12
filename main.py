@@ -1,7 +1,7 @@
 import math
 import random
+import typing
 from enum import Enum
-from typing import Any
 
 from api import *
 
@@ -257,7 +257,7 @@ class MyBot(ArazimWarsBot):
         else:
             return MONKEY_COSTS[MONKEY_NAMES[action[0]]]
 
-    def _perform_action(self, action: list[Any]) -> bool:
+    def _perform_action(self, action: list[typing.Any]) -> bool:
         if action[0] == "UPGRADE":
             return self.upgrade_monkey(action[1], action[2])
         else:
