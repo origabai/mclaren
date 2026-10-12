@@ -27,33 +27,33 @@ class MyBot(ArazimWarsBot):
         INITIAL_ACTIONS = [
             (lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("ON_START")),200),
             (lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("STRATEGIC")),200),
-            (lambda: self.upgrade_monkey(-2, False),140),
-            (lambda: self.upgrade_monkey(-1, True),90),
-            (lambda: self.upgrade_monkey(-1, True),160),
-            (lambda: self.upgrade_monkey(-1, True),500),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-2, False),140),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),90),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),160),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),500),
             (lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),500),
-            (lambda: self.upgrade_monkey(-1, True),300),
-            (lambda: self.upgrade_monkey(-1, True),250),
-            (lambda: self.upgrade_monkey(-1, True),700),
-            (lambda: self.upgrade_monkey(-2, True),1900),
-            (lambda: self.upgrade_monkey(-1, True),3000),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),300),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),250),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),700),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-2, True),1900),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),3000),
             (lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),3000),
-            (lambda: self.upgrade_monkey(-1, True),3000),
-            (lambda: self.upgrade_monkey(-1, True),4000),
-            (lambda: self.upgrade_monkey(-1, False),800),
-            (lambda: self.upgrade_monkey(-1, False),1200),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),3000),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),4000),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, False),800),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, False),1200),
             (lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),500),
-            (lambda: self.upgrade_monkey(-1, True),300),
-            (lambda: self.upgrade_monkey(-1, True),250),
-            (lambda: self.upgrade_monkey(-1, True),700),
-            (lambda: self.upgrade_monkey(-1, True),3000),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),300),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),250),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),700),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),3000),
         ]
         REPEAT_ACTIONS = [
             (lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),3000),
-            (lambda: self.upgrade_monkey(-1, True),3000),
-            (lambda: self.upgrade_monkey(-1, True),4000),
-            (lambda: self.upgrade_monkey(-1, False),800),
-            (lambda: self.upgrade_monkey(-1, False),1200)
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),3000),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, True),4000),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, False),800),
+            (lambda: self.upgrade_monkey(len(self.monkeys)-1, False),1200)
         ]
 
         while INITIAL_ACTIONS:
@@ -78,7 +78,7 @@ class MyBot(ArazimWarsBot):
             repeat_actions_index +=1
             if repeat_actions_index >= len(REPEAT_ACTIONS):
                 repeat_actions_index = 0
-            self.monkeys_spending_roundly += INITIAL_ACTIONS[0][1]
+            self.monkeys_spending_roundly += REPEAT_ACTIONS[repeat_actions_index][1]
 
     def _get_monkey_budget() -> int:
         """
