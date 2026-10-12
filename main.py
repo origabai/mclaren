@@ -209,7 +209,7 @@ class MyBot(ArazimWarsBot):
         2. prioritize camo/lead if you can shoot it
         """
 
-        for monkey_index in range(self.monkey_count):
+        for monkey_index in range(len(self.monkeys)):
             targets: list[BloonInfo] = self.context.get_monkey_targets(monkey_index)
             monkey = self.monkeys[monkey_index]
 
@@ -262,53 +262,60 @@ class MyBot(ArazimWarsBot):
         Makes any number of predefined moves until it runs out of money
         """
         INITIAL_ACTIONS = [
-            lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("ON_START")),
-            lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            lambda: self.upgrade_monkey(-2, False),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-2, True),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            lambda: self.upgrade_monkey(-1, False),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, False),
-            lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, True),
+            (lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("ON_START")), 200),
+            (lambda: self.place_monkey(Monkeys.DART_MONKEY, self.get_next_coordinate("STRATEGIC")), 200),
+            (lambda: self.upgrade_monkey(-2, False), 140),
+            (lambda: self.upgrade_monkey(-1, True), 90),
+            (lambda: self.upgrade_monkey(-1, True), 160),
+            (lambda: self.upgrade_monkey(-1, True), 500),
+            (lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")), 500),
+            (lambda: self.upgrade_monkey(-1, True), 300),
+            (lambda: self.upgrade_monkey(-1, True), 250),
+            (lambda: self.upgrade_monkey(-1, True), 700),
+            (lambda: self.upgrade_monkey(-2, True), 1900),
+            (lambda: self.upgrade_monkey(-1, True), 3000),
+            (lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")), 3000),
+            (lambda: self.upgrade_monkey(-1, True), 3000),
+            (lambda: self.upgrade_monkey(-1, True), 4000),
+            (lambda: self.upgrade_monkey(-1, False), 800),
+            (lambda: self.upgrade_monkey(-1, False), 1200),
+            (lambda: self.place_monkey(Monkeys.NINJA_MONKEY, self.get_next_coordinate("STRATEGIC")), 500),
+            (lambda: self.upgrade_monkey(-1, True), 300),
+            (lambda: self.upgrade_monkey(-1, True), 250),
+            (lambda: self.upgrade_monkey(-1, True), 700),
+            (lambda: self.upgrade_monkey(-1, True), 3000),
         ]
         REPEAT_ACTIONS = [
-            lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")),
-            lambda: self.upgrade_monkey(-1, False),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, True),
-            lambda: self.upgrade_monkey(-1, False),
+            (lambda: self.place_monkey(Monkeys.SUPER_MONKEY, self.get_next_coordinate("STRATEGIC")), 3000),
+            (lambda: self.upgrade_monkey(-1, True), 3000),
+            (lambda: self.upgrade_monkey(-1, True), 4000),
+            (lambda: self.upgrade_monkey(-1, False), 800),
+            (lambda: self.upgrade_monkey(-1, False), 1200),
         ]
 
         while INITIAL_ACTIONS:
-            money = self.context.get_money()
-            action_success = INITIAL_ACTIONS[0]()
-            self.monkeys_spending_roundly = money - self.context.get_money()
-            if not action_success:
-                yield
+            while True:
+                next_move_budget = INITIAL_ACTIONS[0][1]
+                if next_move_budget + self.monkeys_spending_roundly > self.get_monkey_budget():
+                    yield
+                else:
+                    break
+            INITIAL_ACTIONS[0][0]()
+            self.monkeys_spending_roundly += INITIAL_ACTIONS[0][1]
+            INITIAL_ACTIONS.pop(0)
         repeat_actions_index = 0
         while True:
-            money = self.context.get_money()
-            action_success = REPEAT_ACTIONS[repeat_actions_index]()
+            while True:
+                next_move_budget = REPEAT_ACTIONS[0][1]
+                if next_move_budget + self.monkeys_spending_roundly > self.get_monkey_budget():
+                    yield
+                else:
+                    break
+            REPEAT_ACTIONS[repeat_actions_index][repeat_actions_index]()
             repeat_actions_index += 1
             if repeat_actions_index >= len(REPEAT_ACTIONS):
                 repeat_actions_index = 0
-            self.monkeys_spending_roundly = money - self.context.get_money()
-            if not action_success:
-                yield
+            self.monkeys_spending_roundly += REPEAT_ACTIONS[repeat_actions_index][1]
 
     def place_monkey(self, monkey: Monkeys, position: tuple[float, float]) -> None:
         result = self.context.place_monkey(monkey, position)
@@ -327,7 +334,9 @@ class MyBot(ArazimWarsBot):
 
     def upgrade_monkey(self, monkey_index: int, top_row: bool) -> bool:
         result = self.context.upgrade_monkey(monkey_index, top_row)
-        return result != Exceptions.NOT_ENOUGH_MONEY
+        if result == Exceptions.NOT_ENOUGH_MONEY:
+            return False
+        return True
 
     def get_next_coordinate(self, type: str) -> list[float, float]:
         """
