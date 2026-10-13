@@ -607,15 +607,15 @@ class MyBot(ArazimWarsBot):
         if (
             (
                 self.strategy == ECONOMY_ECONOMY.CAMO  # Enemy fixed camo
-                and self.is_player_camo(self.targeted_enemy)
+                and not self.is_player_camo(self.targeted_enemy)
             )
             or (
                 self.strategy == ECONOMY_ECONOMY.LEAD  # Enemy fixed lead
-                and self.is_player_lead(self.targeted_enemy)
+                and not self.is_player_lead(self.targeted_enemy)
             )
             or (
                 self.strategy == ECONOMY_ECONOMY.CAMO_LEAD  # Enemy fixed camo lead
-                and self.is_player_camo_lead(self.targeted_enemy)
+                and not self.is_player_camo_lead(self.targeted_enemy)
             )
         ):
             self.targeted_enemy = self.next_enemy
