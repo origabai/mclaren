@@ -104,8 +104,9 @@ PLACING_LAYOUTS = {
     Maps.TEMPLE: [
         ["Dart Monkey", 455, 109],
         *([["UPGRADE", 0, False]] * 1),
-        ["Dart Monkey", 284, 161],
-        ["Ninja Monkey", 350, 165],
+        ["Tack Shooter", 350, 165],
+        *([["UPGRADE", 3, True]] * 2),
+        ["Ninja Monkey", 284, 161],
         ["Ninja Monkey", 140, 397],
         *([["UPGRADE", 3, True]] * 2),
         ["Super Monkey", 241, 219],
