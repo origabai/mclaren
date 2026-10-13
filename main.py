@@ -35,6 +35,7 @@ MONKEY_NAMES = {
     "Sniper Monkey": Monkeys.SNIPER_MONKEY,
 }
 
+
 # targets
 
 
@@ -100,114 +101,123 @@ MAX_QUEUE_SIZE = 5
 
 
 PLACING_LAYOUTS = {
-    Maps.TEMPLE: [
-        ["Dart Monkey", 455, 109],
-        *([["UPGRADE", 0, False]] * 1),
-        ["Tack Shooter", 350, 165],
-        *([["UPGRADE", 1, True]] * 2),
-        ["Ninja Monkey", 284, 161],
-        ["Ninja Monkey", 140, 397],
-        *([["UPGRADE", 3, True]] * 2),
-        ["Super Monkey", 241, 219],
-        *([["UPGRADE", 4, True]] * 2),
-        ["Super Monkey", 180, 289],
-        *([["UPGRADE", 4, False]] * 2),
-        ["Super Monkey", 84, 350],
-        *([["UPGRADE", 5, True]] * 2),
-        *([["UPGRADE", 5, False]] * 2),
-        ["Super Monkey", 42, 426],
-        ["Super Monkey", 40, 509],
-        *([["UPGRADE", 6, True]] * 2),
-        *([["UPGRADE", 6, False]] * 2),
-        ["Super Monkey", 343, 49],
-        *([["UPGRADE", 7, True]] * 2),
-        *([["UPGRADE", 7, False]] * 2),
-        *([["UPGRADE", 8, True]] * 3),
-        *([["UPGRADE", 8, False]] * 2),
-    ],
-    Maps.SHAPES: [
-        ["Dart Monkey", 103, 149],
-        *([["UPGRADE", 0, False]] * 1),
-        ["Tack Shooter", 192, 302],
-        *([["UPGRADE", 1, True]] * 2),
-        ["Ninja Monkey", 306, 340],
-        ["Ninja Monkey", 190, 244],
-        *([["UPGRADE", 0, True]] * 2),
-        ["Super Monkey", 125, 400],
-        *([["UPGRADE", 4, True]] * 1),
-        *([["UPGRADE", 0, True]] * 2),
-        *([["UPGRADE", 4, True]] * 1),
-        *([["UPGRADE", 2, True]] * 4),
-        ["Super Monkey", 133, 485],
-        *([["UPGRADE", 5, True]] * 2),
-        *([["UPGRADE", 3, True]] * 4),
-        ["Super Monkey", 388, 333],
-        *([["UPGRADE", 6, True]] * 2),
-        ["Super Monkey", 243, 509],
-        *([["UPGRADE", 7, True]] * 2),
-        ["Super Monkey", 203, 135],
-        *([["UPGRADE", 8, True]] * 2),
-        ["Super Monkey", 424, 481],
-        *([["UPGRADE", 9, True]] * 2),
-        ["Super Monkey", 39, 131],
-        *([["UPGRADE", 10, True]] * 2),
-    ],
-    Maps.YELLOW_BRICK: [
-        ["Dart Monkey", 151, 241],
-        *([["UPGRADE", 0, False]] * 1),
-        ["Dart Monkey", 347, 233],
-        ["Ninja Monkey", 241, 315],
-        ["Ninja Monkey", 173, 455],
-        *([["UPGRADE", 0, True]] * 2),
-        ["Super Monkey", 246, 136],
-        *([["UPGRADE", 4, True]] * 1),
-        *([["UPGRADE", 0, True]] * 2),
-        *([["UPGRADE", 4, True]] * 1),
-        *([["UPGRADE", 2, True]] * 4),
-        ["Super Monkey", 77, 302],
-        *([["UPGRADE", 5, True]] * 2),
-        *([["UPGRADE", 3, True]] * 4),
-        ["Super Monkey", 428, 358],
-        *([["UPGRADE", 6, True]] * 2),
-        ["Super Monkey", 243, 509],
-        *([["UPGRADE", 7, True]] * 2),
-        ["Super Monkey", 61, 128],
-        *([["UPGRADE", 8, True]] * 2),
-        ["Super Monkey", 435, 123],
-        *([["UPGRADE", 9, True]] * 2),
-        ["Super Monkey", 338, 434],
-        *([["UPGRADE", 10, True]] * 2),
-    ],
-    Maps.INTERCHANGE: [
-        ["Dart Monkey", 116, 101],
-        *([["UPGRADE", 0, False]] * 1),
-        ["Dart Monkey", 348, 290],
-        ["Tack Shooter", 173, 251],
-        ["Ninja Monkey", 353, 482],
-        *([["UPGRADE", 0, True]] * 4),
-        ["Super Monkey", 57, 336],
-        *([["UPGRADE", 4, True]] * 3),
-        *([["UPGRADE", 2, True]] * 4),
-        ["Super Monkey", 376, 375],
-        *([["UPGRADE", 5, True]] * 2),
-        *([["UPGRADE", 5, False]] * 2),
-        *([["UPGRADE", 3, True]] * 4),
-        ["Super Monkey", 61, 168],
-        *([["UPGRADE", 6, True]] * 2),
-        *([["UPGRADE", 6, False]] * 2),
-        ["Super Monkey", 388, 199],
-        ["Super Monkey", 332, 78],
-        *([["UPGRADE", 7, True]] * 2),
-        *([["UPGRADE", 7, False]] * 2),
-        ["Super Monkey", 54, 480],
-        ["Super Monkey", 413, 290],
-        *([["UPGRADE", 8, True]] * 2),
-        *([["UPGRADE", 8, False]] * 2),
-        *([["UPGRADE", 9, True]] * 3),
-        *([["UPGRADE", 9, False]] * 2),
-        *([["UPGRADE", 10, True]] * 3),
-        *([["UPGRADE", 10, False]] * 2),
-    ],
+    Maps.TEMPLE: {
+        None: [
+            ["Dart Monkey", 455, 109],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Tack Shooter", 350, 165],
+            *([["UPGRADE", 1, True]] * 2),
+            ["Ninja Monkey", 284, 161],
+            ["Ninja Monkey", 140, 397],
+            *([["UPGRADE", 3, True]] * 2),
+            ["Super Monkey", 241, 219],
+            *([["UPGRADE", 4, True]] * 2),
+            ["Super Monkey", 180, 289],
+            *([["UPGRADE", 4, False]] * 2),
+            ["Super Monkey", 84, 350],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 5, False]] * 2),
+            ["Super Monkey", 42, 426],
+            ["Super Monkey", 40, 509],
+            *([["UPGRADE", 6, True]] * 2),
+            *([["UPGRADE", 6, False]] * 2),
+            ["Super Monkey", 343, 49],
+            *([["UPGRADE", 7, True]] * 2),
+            *([["UPGRADE", 7, False]] * 2),
+            *([["UPGRADE", 8, True]] * 3),
+            *([["UPGRADE", 8, False]] * 2),
+        ],
+        Monkeys.DART_MONKEY: [],
+    },
+    Maps.SHAPES: {
+        None: [
+            ["Dart Monkey", 103, 149],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Tack Shooter", 192, 302],
+            *([["UPGRADE", 1, True]] * 2),
+            ["Ninja Monkey", 306, 340],
+            ["Ninja Monkey", 190, 244],
+            *([["UPGRADE", 0, True]] * 2),
+            ["Super Monkey", 125, 400],
+            *([["UPGRADE", 4, True]] * 1),
+            *([["UPGRADE", 0, True]] * 2),
+            *([["UPGRADE", 4, True]] * 1),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Super Monkey", 133, 485],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 3, True]] * 4),
+            ["Super Monkey", 388, 333],
+            *([["UPGRADE", 6, True]] * 2),
+            ["Super Monkey", 243, 509],
+            *([["UPGRADE", 7, True]] * 2),
+            ["Super Monkey", 203, 135],
+            *([["UPGRADE", 8, True]] * 2),
+            ["Super Monkey", 424, 481],
+            *([["UPGRADE", 9, True]] * 2),
+            ["Super Monkey", 39, 131],
+            *([["UPGRADE", 10, True]] * 2),
+        ]
+    },
+    Maps.YELLOW_BRICK: {
+        None: [
+            ["Dart Monkey", 151, 241],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Dart Monkey", 347, 233],
+            ["Ninja Monkey", 241, 315],
+            ["Ninja Monkey", 173, 455],
+            *([["UPGRADE", 0, True]] * 2),
+            ["Super Monkey", 246, 136],
+            *([["UPGRADE", 4, True]] * 1),
+            *([["UPGRADE", 0, True]] * 2),
+            *([["UPGRADE", 4, True]] * 1),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Super Monkey", 77, 302],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 3, True]] * 4),
+            ["Super Monkey", 428, 358],
+            *([["UPGRADE", 6, True]] * 2),
+            ["Super Monkey", 243, 509],
+            *([["UPGRADE", 7, True]] * 2),
+            ["Super Monkey", 61, 128],
+            *([["UPGRADE", 8, True]] * 2),
+            ["Super Monkey", 435, 123],
+            *([["UPGRADE", 9, True]] * 2),
+            ["Super Monkey", 338, 434],
+            *([["UPGRADE", 10, True]] * 2),
+        ]
+    },
+    Maps.INTERCHANGE: {
+        None: [
+            ["Dart Monkey", 116, 101],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Dart Monkey", 348, 290],
+            ["Tack Shooter", 173, 251],
+            ["Ninja Monkey", 353, 482],
+            *([["UPGRADE", 0, True]] * 4),
+            ["Super Monkey", 57, 336],
+            *([["UPGRADE", 4, True]] * 3),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Super Monkey", 376, 375],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 5, False]] * 2),
+            *([["UPGRADE", 3, True]] * 4),
+            ["Super Monkey", 61, 168],
+            *([["UPGRADE", 6, True]] * 2),
+            *([["UPGRADE", 6, False]] * 2),
+            ["Super Monkey", 388, 199],
+            ["Super Monkey", 332, 78],
+            *([["UPGRADE", 7, True]] * 2),
+            *([["UPGRADE", 7, False]] * 2),
+            ["Super Monkey", 54, 480],
+            ["Super Monkey", 413, 290],
+            *([["UPGRADE", 8, True]] * 2),
+            *([["UPGRADE", 8, False]] * 2),
+            *([["UPGRADE", 9, True]] * 3),
+            *([["UPGRADE", 9, False]] * 2),
+            *([["UPGRADE", 10, True]] * 3),
+            *([["UPGRADE", 10, False]] * 2),
+        ]
+    },
 }
 
 
@@ -437,7 +447,11 @@ class MyBot(ArazimWarsBot):
             result == Exceptions.OUT_OF_MAP
             or result == Exceptions.TOO_CLOSE_TO_BLOON_ROUTE
             or result == Exceptions.TOO_CLOSE_TO_OTHER_MONKEY
-        ) or result == Exceptions.NOT_ENOUGH_MONEY:
+            or result == Exceptions.MONKEY_BANNED
+        ):
+            self.context.log_warning(f"Couldn't place monkey because of: {result}")
+            return False
+        elif result == Exceptions.NOT_ENOUGH_MONEY:
             return False
         else:
             return False
@@ -451,21 +465,23 @@ class MyBot(ArazimWarsBot):
                 self.monkeys[monkey_index].bottom_level += 1
         return result == Exceptions.OK
 
+    def _get_layout(self):
+        layouts = PLACING_LAYOUTS[self.map]
+        for banned in self.context.get_banned_monkeys():
+            if banned in layouts:
+                return layouts[banned]
+        return layouts[None]
+
     def handle_monkeys(self) -> None:
-        placing_layout = PLACING_LAYOUTS[self.map]
-        if isinstance(placing_layout, dict):
-            placing_layout = placing_layout[
-                ["STANDARD", "BANANZA"][self.context.get_mode() == GameMode.BANANZA]
-            ]
-        if self.action_index >= len(placing_layout):
+        layout = self._get_layout()
+        if self.action_index >= len(layout):
             self.actions_complete = True
             return
         budget = self.get_monkey_budget()
         used_money = 0
-        next_action = placing_layout[self.action_index]
+        next_action = layout[self.action_index]
         if used_money + self._get_action_price(next_action) < budget:
-            successful_action = self._perform_action(next_action)
-            if successful_action:
+            if self._perform_action(next_action):
                 self.action_index += 1
 
     ############baloons sections################
