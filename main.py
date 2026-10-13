@@ -1,3 +1,4 @@
+import math
 import random
 import typing
 from enum import Enum
@@ -747,6 +748,26 @@ class MyBot(ArazimWarsBot):
             self.monkey_budget += my_budget - (self.monkey_budget + self.economy_budget)
 
     ############targets sections################
+    def evaluate_point(
+        self, point: tuple[int, int], monkey_range: int, lines: list[LineInfo]
+    ) -> float:
+        """Returns the average dist from lines."""
+
+        dist_sum = 0.0
+        dist_count = 0
+        for line in lines:
+            m = (line.start[1] - line.end[1]) / (
+                line.start[0] - line.end[0] + 0.00000000001
+            )
+            b = line.start[1] - m * line.start[0]
+
+            distance = abs(m * point[0] - point[1] + b) / math.sqrt(m**2 + 1)
+            if 0 < distance <= monkey_range:
+                dist_sum += 1 + (1 / distance)
+                dist_count += 1
+
+        return dist_sum / dist_count if dist_count > 0 else 10000000
+
     def handle_targets(self) -> None:
         """
         1. only shoot bloons you can target
