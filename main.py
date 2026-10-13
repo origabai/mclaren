@@ -293,16 +293,6 @@ class MyBot(ArazimWarsBot):
             self.economy_saving = self.send_bloons(self.strategy)
         self.handle_emotes()
 
-    # def get_board_status(self) -> tuple[int, int]:
-    #     """calculate the cammo baloons strength and the lead baloons strength and the total baloons strength
-    #     (total, cammo, lead)"""
-    #     cammo = 0
-    #     lead = 0
-    #     total = 0
-    #     bloons = self.context.get_bloons()
-    #     return  # TODO
-    # for bloon in bloons :
-
     def manage_budget(self) -> None:
         """
         manging the budget and spliting him pytzovly
@@ -431,8 +421,6 @@ class MyBot(ArazimWarsBot):
         Returns:
             Amount of budget not used.
         """
-        # self.context.log_info(f"round: {self.get_round()}")
-        # self.context.log_info(f"budget: {self.get_economy_budget()}")
         # Prevent sending if full
         if self.context.get_eco_queue_size() >= MAX_QUEUE_SIZE:
             return self.get_economy_budget()
@@ -441,7 +429,6 @@ class MyBot(ArazimWarsBot):
         available_bloons = self.get_available_bloons(strategy)
         if not available_bloons:
             return self.get_economy_budget()
-        # self.context.log_info(f"2. Available bloons: {available_bloons}")
 
         # sort available bloons
         sorted_bloons = sorted(
@@ -466,7 +453,6 @@ class MyBot(ArazimWarsBot):
 
         # Return how much budget was used
         if result == Result.OK:
-            # self.context.log_info("Successfully sent bloon")
             return self.get_economy_budget() - sorted_bloons[-1][1].cost
         else:
             return self.get_economy_budget()
