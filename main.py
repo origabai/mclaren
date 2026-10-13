@@ -781,8 +781,8 @@ class MyBot(ArazimWarsBot):
                 self.monkeys[monkey_index].bottom_level += 1
         return result == Exceptions.OK
 
-    def _get_layout(self):
-        layouts = PLACING_LAYOUTS[self.map]
+    def _get_layout(self) -> typing.Any:
+        layouts: typing.Any = PLACING_LAYOUTS[self.map]
         for banned in self.context.get_banned_monkeys():
             if banned in layouts:
                 return layouts[banned]
@@ -796,9 +796,10 @@ class MyBot(ArazimWarsBot):
         budget = self.get_monkey_budget()
         used_money = 0
         next_action = layout[self.action_index]
-        if used_money + self._get_action_price(next_action) < budget:
-            if self._perform_action(next_action):
-                self.action_index += 1
+        if used_money + self._get_action_price(
+            next_action
+        ) < budget and self._perform_action(next_action):
+            self.action_index += 1
 
     ############baloons sections################
     def send_bloons(self, strategy: ECONOMY_ECONOMY) -> int:
