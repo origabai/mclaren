@@ -149,7 +149,8 @@ PLACING_LAYOUTS = {
             *([["UPGRADE", 8, True]] * 2),
             ["Super Monkey", 424, 481],
             *([["UPGRADE", 9, True]] * 2),
-            ["Super Monkey", 39, 131] * ([["UPGRADE", 10, True]] * 2),
+            ["Super Monkey", 39, 131],
+            *([["UPGRADE", 10, True]] * 2),
         ]
     },
     Maps.YELLOW_BRICK: {
@@ -420,10 +421,11 @@ class MyBot(ArazimWarsBot):
         return result != Exceptions.NOT_ENOUGH_MONEY
 
     def _get_layout(self):
-        # Get PLACING_LAYOUTS[self.map][None] if none of our monkeys are banned, else PLACING_LAYOUTS[self.map][banned_monkey]
-        return PLACING_LAYOUTS[self.map].get(
-            self.context.get_banned_monkeys()[0], PLACING_LAYOUTS[self.map][None]
-        )
+        layouts = PLACING_LAYOUTS[self.map]
+        for banned in self.context.get_banned_monkeys():
+            if banned in layouts:
+                return layouts[banned]
+        return layouts[None]
 
     def handle_monkeys(self):
         layout = self._get_layout()
