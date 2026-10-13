@@ -1295,6 +1295,12 @@ class MyBot(ArazimWarsBot):
         """Checks wether a player can be attacked by camo_lead."""
         return self.is_player_lead(index) and self.is_player_camo(index)
 
+    def find_enemy(self) -> int | None:
+        for b in self.context.get_bloons():
+            if b.eco_from != None:
+                return b.eco_from
+        return None
+
     def find_someone_to_bully(self) -> None:
         """
         Calculate the targeted_enemy_index and strategy for sending bloons
@@ -1305,6 +1311,8 @@ class MyBot(ArazimWarsBot):
             ECONOMY_ECONOMY.CAMO,
             ECONOMY_ECONOMY.CAMO_LEAD,
         ]
+
+
 
         # Enemy fixed weakness change to next_enemy
         if (
@@ -1348,7 +1356,9 @@ class MyBot(ArazimWarsBot):
             if not self.context.is_player_active(i):  # Ignore dead players
                 continue
 
-            if self.is_player_camo_lead(i) and self.strategy not in SPECIAL_STRATS:
+            if enemy := self.find_enemy() is not None:
+                self.targeted_enemy = enemy
+            elif self.is_player_camo_lead(i) and self.strategy not in SPECIAL_STRATS:
                 self.targeted_enemy = i
                 self.strategy = ECONOMY_ECONOMY.CAMO_LEAD
             elif self.is_player_camo(i) and self.strategy not in SPECIAL_STRATS:
