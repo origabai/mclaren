@@ -154,7 +154,7 @@ PLACING_LAYOUTS = {
         *([["UPGRADE", 10, True]] * 2),
     ],
     Maps.YELLOW_BRICK: [
-        ["Dart Monkey", 151, 241],
+        ["Dart Monkey", 286, 262],
         *([["UPGRADE", 0, False]] * 1),
         ["Tack Shooter", 149, 200],
         *([["UPGRADE", 1, True]] * 2),
