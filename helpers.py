@@ -7,7 +7,6 @@ the mighty main of the afek the mighty pytzov founder
 author: afek the mighty pytzov founder
 """
 
-
 # Only pick the cool emotes of course
 EMOTES = [Emote.NONE, Emote.COOL, Emote.LAUGHING, Emote.LOVE]
 
@@ -31,7 +30,10 @@ class MyBot(ArazimWarsBot):
         return self.round
 
     def update_round(self) -> None:
-        if self.context.get_round_times()[self.round + 1] <= self.context.get_current_steps():
+        if (
+            self.context.get_round_times()[self.round + 1]
+            <= self.context.get_current_steps()
+        ):
             self.round += 1
 
     def run(self) -> None:
@@ -51,7 +53,9 @@ class MyBot(ArazimWarsBot):
             self.context.log_info("Placing Monkeys!")
 
             # Place Monkeys
-            result = self.context.place_monkey(Monkeys.DART_MONKEY, (24 * self.attempted_position + 24, 400))
+            result = self.context.place_monkey(
+                Monkeys.DART_MONKEY, (24 * self.attempted_position + 24, 400)
+            )
             if result == Exceptions.OK:
                 self.monkey_count += 1
                 self.monkey_levels.append(0)

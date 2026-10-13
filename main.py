@@ -1,3 +1,4 @@
+import math
 import random
 import typing
 from enum import Enum
@@ -8,6 +9,18 @@ from api import *
 the mighty main of the afek the mighty pytzov founder
 author: afek the mighty pytzov founder
 """
+MAP_WIDTH = 430
+MAP_HEIGHT = 600
+
+MONKEY_RADII = {
+    Monkeys.DART_MONKEY: 26,
+    Monkeys.TACK_SHOOTER: 26,
+    Monkeys.NINJA_MONKEY: 27,
+    Monkeys.SUPER_MONKEY: 29,
+    Monkeys.BOMB_TOWER: 32,
+    Monkeys.SNIPER_MONKEY: 26,
+}
+
 
 PERCENTAGE_TO_MONKEY = [1] + [0.35 + 0.65 * (1 / i) for i in range(1, 30)]
 # Only pick the cool emotes of course
@@ -38,6 +51,17 @@ MONKEY_NAMES = {
 
 
 # targets
+
+
+def _distance_to_segment(point: tuple[float, float], line: LineInfo) -> float:
+    px, py = point
+    (x1, y1), (x2, y2) = line.start, line.end
+    dx, dy = x2 - x1, y2 - y1
+    length_squared = dx * dx + dy * dy
+    if length_squared == 0:
+        return math.hypot(px - x1, py - y1)
+    t = max(0.0, min(1.0, ((px - x1) * dx + (py - y1) * dy) / length_squared))
+    return math.hypot(px - (x1 + t * dx), py - (y1 + t * dy))
 
 
 def can_monkey_shoot_lead(monkey: MonkeyInfo) -> bool:
@@ -587,6 +611,154 @@ PLACING_LAYOUTS = {
             *([["UPGRADE", 10, False]] * 3),
         ],
     },
+    False: {
+        None: [
+            ["Dart Monkey"],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Tack Shooter"],
+            *([["UPGRADE", 1, True]] * 2),
+            ["Ninja Monkey"],
+            ["Ninja Monkey"],
+            *([["UPGRADE", 0, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 0, True]] * 2),
+            *([["UPGRADE", 4, True]] * 2),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Super Monkey"],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 3, True]] * 4),
+            ["Super Monkey"],
+            *([["UPGRADE", 6, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 7, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 8, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 9, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 10, True]] * 2),
+        ],
+        Monkeys.DART_MONKEY: [
+            ["Bomb Tower"],
+            ["Ninja Monkey"],
+            ["Ninja Monkey"],
+            ["Bomb Tower"],
+            ["Super Monkey"],
+            *([["UPGRADE", 4, True]] * 2),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Super Monkey"],
+            *([["UPGRADE", 1, True]] * 4),
+            *([["UPGRADE", 5, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 6, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 7, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 8, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 9, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 10, True]] * 2),
+        ],
+        Monkeys.TACK_SHOOTER: [
+            ["Dart Monkey"],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Dart Monkey"],
+            ["Ninja Monkey"],
+            ["Ninja Monkey"],
+            ["Super Monkey"],
+            *([["UPGRADE", 1, True]] * 4),
+            *([["UPGRADE", 4, True]] * 1),
+            *([["UPGRADE", 0, False]] * 2),
+            *([["UPGRADE", 0, True]] * 2),
+            *([["UPGRADE", 4, True]] * 1),
+            ["Super Monkey"],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Super Monkey"],
+            *([["UPGRADE", 3, True]] * 4),
+            *([["UPGRADE", 6, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 7, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 8, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 9, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 10, True]] * 2),
+        ],
+        Monkeys.NINJA_MONKEY: [
+            ["Dart Monkey"],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Tack Shooter"],
+            *([["UPGRADE", 1, True]] * 2),
+            *([["UPGRADE", 0, True]] * 2),
+            *([["UPGRADE", 0, False]] * 2),
+            ["Dart Monkey"],
+            ["Super Monkey"],
+            *([["UPGRADE", 3, True]] * 2),
+            *([["UPGRADE", 4, False]] * 3),
+            *([["UPGRADE", 4, True]] * 2),
+            ["Dart Monkey"],
+            *([["UPGRADE", 5, False]] * 3),
+            *([["UPGRADE", 5, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 6, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 7, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 8, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 9, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 10, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 11, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 11, True]] * 2),
+            ["Super Monkey"],
+            *([["UPGRADE", 11, True]] * 2),
+        ],
+        Monkeys.SUPER_MONKEY: [
+            ["Dart Monkey"],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Tack Shooter"],
+            *([["UPGRADE", 1, True]] * 2),
+            ["Ninja Monkey"],
+            ["Ninja Monkey"],
+            *([["UPGRADE", 0, False]] * 2),
+            *([["UPGRADE", 0, True]] * 2),
+            ["Dart Monkey"],
+            *([["UPGRADE", 4, True]] * 2),
+            *([["UPGRADE", 4, False]] * 3),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Dart Monkey"],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 5, False]] * 3),
+            *([["UPGRADE", 3, True]] * 4),
+            ["Dart Monkey"],
+            *([["UPGRADE", 6, True]] * 2),
+            *([["UPGRADE", 6, False]] * 3),
+            ["Dart Monkey"],
+            *([["UPGRADE", 7, True]] * 2),
+            *([["UPGRADE", 7, False]] * 3),
+            ["Dart Monkey"],
+            *([["UPGRADE", 8, True]] * 2),
+            *([["UPGRADE", 8, False]] * 3),
+            ["Dart Monkey"],
+            *([["UPGRADE", 9, True]] * 2),
+            *([["UPGRADE", 9, False]] * 3),
+            ["Dart Monkey"],
+            *([["UPGRADE", 10, True]] * 2),
+            *([["UPGRADE", 10, False]] * 3),
+            ["Dart Monkey"],
+            *([["UPGRADE", 11, True]] * 2),
+            *([["UPGRADE", 11, False]] * 3),
+            ["Dart Monkey"],
+            *([["UPGRADE", 12, True]] * 2),
+            *([["UPGRADE", 12, False]] * 3),
+        ],
+    },
 }
 
 
@@ -692,7 +864,47 @@ class MyBot(ArazimWarsBot):
         if action[0] == "UPGRADE":
             return self.upgrade_monkey(action[1], action[2])
         else:
-            return self.place_monkey(MONKEY_NAMES[action[0]], (action[1], action[2]))
+            if len(action) == 3:
+                return self.place_monkey(
+                    MONKEY_NAMES[action[0]], (action[1], action[2])
+                )
+            else:
+                return self.place_monkey(
+                    MONKEY_NAMES[action[0]],
+                    self._find_ideal_monkey_location(MONKEY_NAMES[action[0]]),
+                )
+
+    def _find_ideal_monkey_location(
+        self, monkey_radius: int, placement_options=list[tuple[int, int]]
+    ) -> tuple[int, int]:
+        valid_placements = self.find_valid_placements(monkey_radius)
+
+    def find_valid_placements(
+        self, monkey_radius: float, samples: int = 100
+    ) -> list[tuple[float, float]]:
+        track_clearance = monkey_radius + self.context.get_track_width() / 2
+        route = self.context.get_bloon_route() + self.context.get_eco_bloon_route()
+        existing_monkeys = self.context.get_player_monkeys(self.get_player_index())
+        valid_points: list[tuple[float, float]] = []
+        for _ in range(samples):
+            point = (
+                random.uniform(monkey_radius, MAP_WIDTH - monkey_radius),
+                random.uniform(monkey_radius, MAP_HEIGHT - monkey_radius),
+            )
+            if any(
+                _distance_to_segment(point, line) < track_clearance for line in route
+            ):
+                continue
+            if any(
+                math.dist(point, monkey.position)
+                < monkey_radius + MONKEY_RADII[monkey.kind]
+                for monkey in existing_monkeys
+            ):
+                continue
+            valid_points.append(point)
+        return (
+            valid_points if valid_points else self.find_valid_placements(monkey_radius)
+        )
 
     def run(self) -> None:
         self.update_round()
@@ -838,7 +1050,7 @@ class MyBot(ArazimWarsBot):
         return result == Exceptions.OK
 
     def _get_layout(self) -> typing.Any:
-        layouts: typing.Any = PLACING_LAYOUTS[self.map]
+        layouts: typing.Any = PLACING_LAYOUTS.get(self.map, PLACING_LAYOUTS[False])
         for banned in self.context.get_banned_monkeys():
             layout = layouts.get(banned)
             if layout:
