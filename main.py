@@ -338,7 +338,7 @@ class MyBot(ArazimWarsBot):
             self.monkey_budget += 500
         self.monkey_budget = self.monkey_saving
         self.economy_budget = self.economy_saving
-        adding = int(new_money * (0.15 + math.sqrt(1 / self.round) * 0.85))
+        adding = int(new_money * (0.1 + math.sqrt(1 / self.round) * 0.9))
         if new_money > 0:
             self.monkey_budget += adding
             self.economy_budget += new_money - adding
@@ -347,7 +347,7 @@ class MyBot(ArazimWarsBot):
             self.monkey_budget += self.economy_budget
             self.economy_budget = 0
             if curr_health < self.prev_health:
-                self.hit_cooldown = 8 * 60
+                self.hit_cooldown = 2 * 60
             else:
                 self.hit_cooldown -= 1
         self.prev_health = curr_health
