@@ -109,9 +109,9 @@ PLACING_LAYOUTS = {
         ["Ninja Monkey", 140, 397],
         ["Super Monkey", 241, 219],
         *([["UPGRADE", 3, True]] * 2),
+        ["Super Monkey", 180, 289],
         *([["UPGRADE", 5, True]] * 2),
         *([["UPGRADE", 5, False]] * 2),
-        ["Super Monkey", 180, 289],
         ["Super Monkey", 84, 350],
         *([["UPGRADE", 6, True]] * 2),
         *([["UPGRADE", 6, False]] * 2),
@@ -296,7 +296,8 @@ class MyBot(ArazimWarsBot):
                 if is_upgrade_row_top
                 else monkey_to_upgrade.bottom_level
             )
-            return UPGRADE_COSTS[monkey_to_upgrade.kind][is_upgrade_row_top][
+            upgrade_row = 0 if is_upgrade_row_top else 1
+            return UPGRADE_COSTS[monkey_to_upgrade.kind][upgrade_row][
                 monkey_level_in_row
             ]
 
@@ -442,8 +443,7 @@ class MyBot(ArazimWarsBot):
                 self.monkeys[monkey_index].top_level += 1
             else:
                 self.monkeys[monkey_index].bottom_level += 1
-            result = self.context.upgrade_monkey(monkey_index, top_row)
-        return result != Exceptions.NOT_ENOUGH_MONEY
+        return result == Exceptions.OK
 
     def handle_monkeys(self) -> None:
         placing_layout = PLACING_LAYOUTS[self.map]
