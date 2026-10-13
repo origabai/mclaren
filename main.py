@@ -197,8 +197,6 @@ class MyBot(ArazimWarsBot):
         self.attempted_position = 0
         self.emote_index = 0
         self.defence = self.context.get_mode() == GameMode.DEFENSE
-        self.economy_saving = 0
-        self.monkeys_saving = 0
         self.round = 1
         self.monkeys: list[MonkeyInfo] = []
         self.monkeys_spending_roundly = 0
@@ -207,6 +205,10 @@ class MyBot(ArazimWarsBot):
         self.wait = 0
         self.prev_health = 0
         self.enemy = None
+        self.prev_money = self.context.get_money()
+        self.economy_saving = self.prev_money
+        self.monkeys_saving = 0
+        self.hit_cooldown = 0
 
         self.targeted_enemy_index = self.get_other_player_index()
         self.next_enemy_index = self.get_other_player_index()
@@ -280,6 +282,7 @@ class MyBot(ArazimWarsBot):
         if not self.defence:
             self.economy_saving = self.send_bloons(self.strategy)
         self.handle_emotes()
+        self.prev_money = self.context.get_money()
 
     # def get_board_status(self) -> tuple[int, int]:
     #     """calculate the cammo baloons strength and the lead baloons strength and the total baloons strength
@@ -298,17 +301,28 @@ class MyBot(ArazimWarsBot):
         if self.defence:
             self.monkey_budget = self.context.get_money()
             return
-
-        self.monkeys_saving = self.context.get_money() - int(self.context.get_eco())
-        monkey_add = int(self.context.get_eco() * (0.3 + math.sqrt(1 / self.round) * 0.7))
-        self.monkey_budget = self.monkeys_saving + monkey_add
-        self.economy_budget = self.economy_saving + int(self.context.get_eco()) - monkey_add
-
+        my_budget = self.context.get_money()
+        new_money = my_budget - self.prev_money
+        self.monkey_budget = self.monkeys_saving
+        self.economy_budget = self.economy_saving
+        if new_money > 0:
+            self.monkey_budget += int(new_money * (0.3 + math.sqrt(1 / self.round) * 0.7))
+            self.monkey_budget += new_money - int(new_money * (0.3 + math.sqrt(1 / self.round) * 0.7))
         curr_health = self.context.get_player_health(self.get_player_index())
-        if curr_health < self.prev_health:
+        if curr_health < self.prev_health or self.hit_cooldown > 0:
             self.monkey_budget += self.economy_budget
             self.economy_budget = 0
+            if curr_health < self.prev_health:
+                self.hit_cooldown = 8 * 60
+            else:
+                self.hit_cooldown -= 1
         self.prev_health = curr_health
+        # if new_money != 0:
+        #    self.context.log_info(
+        #        f"budget: {self.context.get_money()} monkey_budget: {self.monkey_budget} economy_budget: {self.economy_budget} round: {self.round} new_money: {new_money} prev_money: {self.prev_money}"
+        #    )
+        if my_budget > self.monkey_budget + self.economy_budget:
+            self.monkey_budget += my_budget - (self.monkey_budget + self.economy_budget)
 
     ############targets sections################
     def handle_targets(self) -> None:
