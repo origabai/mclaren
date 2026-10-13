@@ -772,6 +772,7 @@ class ECONOMY_ECONOMY(Enum):
 
 class MyBot(ArazimWarsBot):
     def setup(self) -> None:
+        global PERCENTAGE_TO_MONKEY
         self.monkey_count = 0
         self.monkey_levels: list[int] = []
         self.attempted_position = 0
@@ -789,6 +790,43 @@ class MyBot(ArazimWarsBot):
         self.economy_saving = 0
         self.hit_cooldown = 0
         self.monkey_boost = 3
+
+        if (
+            self.context.get_mode() == GameMode.STANDARD
+            and self.context.get_player_count() == 2
+        ):
+            PERCENTAGE_TO_MONKEY = [
+                0.44367421799283885,
+                0,
+                0.48602618615783233,
+                0.3704279497870591,
+                0.17450226814234263,
+                0.07024162144545193,
+                0.4445590314725143,
+                0.1937327215952902,
+                0.19187553261652418,
+                0.1968495864280885,
+                0.18461135821174918,
+                0.44601987688438643,
+                0.006948975609708724,
+                0.30260858511800187,
+                0.40632851145750487,
+                0.10256247456299522,
+                0.5675621938608195,
+                0.12181397803517857,
+                0.054641909043719725,
+                0.15681079381619234,
+                0.2983078941080283,
+                0.2958701783613356,
+                0.0008679095183558305,
+                0.6576111252236917,
+                0.1161678390829047,
+                0.20462350417021133,
+                0.41608668499826407,
+                0.46769660307636457,
+                0.1387210315404205,
+                0,
+            ]
 
         # Enemy targeting
         self.targeted_enemy = self.get_other_player_index()
