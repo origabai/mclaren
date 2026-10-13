@@ -33,6 +33,7 @@ MONKEY_NAMES = {
     "Super Monkey": Monkeys.SUPER_MONKEY,
     "Tack Shooter": Monkeys.TACK_SHOOTER,
     "Sniper Monkey": Monkeys.SNIPER_MONKEY,
+    "Bomb Tower": Monkeys.BOMB_TOWER,
 }
 
 
