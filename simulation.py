@@ -1,46 +1,59 @@
 from concurrent.futures import ThreadPoolExecutor
-from random import choice
+from random import choice, random
+import os
 
 from code_battles_cli.api import Client
 
-GAMES = 30
+GAMES = 1
+MAP = "Interchange"
+MODE = "normal"
 
 # returns num. of wins of bot1
 def bot_battle(bot1, bot2, games = GAMES):
     client = Client()
     ans = 0
     for _ in range(games):
-        res = client.run_simulation({"map":"Interchange","mode":"normal"}, [bot1, bot2], seed=12)
-        print(res)
+        res = client.run_simulation({"map":MAP,"mode":MODE}, [bot1, bot2], seed=12)
+        # print(res)
         if res.winner_index == 0:
             ans += 1
     return ans
 
-good_consts = []
 
-def check_this_const(bot_to_optimize, benchmark_bot, i):
-    temp_file_name = "nabaz\\nabaz_" + "".join([choice("abcdefghijkl") for i in range(10)])  +".py"
+def check_this_const(curr_bot, const):
+    temp_file_name = "nabaz" + os.sep + "nabaz_" + "".join([choice("abcdefghijkl") for i in range(10)])  +".py"
     with open(temp_file_name, "w") as g:
-        g.write("CONST_TO_OPTIMIZE = " + str(i) + "\n")
-        with open(bot_to_optimize, "r") as f:
+        g.write("PERCENTAGE_TO_MONKEY = " + str(const) + "\n")
+        with open(curr_bot, "r") as f:
             g.write(f.read())
-    print(i)
-    if bot_battle(temp_file_name, benchmark_bot) == 1:
-        good_consts.append(i)
+    print(const)
+    if bot_battle(temp_file_name, curr_bot) == 1:
+        return True, temp_file_name
+    return False, ""
 
-    
+LIST_LEN = 31
+TRIES = 30
 
-    
+def localsearch(bot_to_optimize):
+    current_bot = ""
+    current_state = [0 for i in range(LIST_LEN)]
+    for _ in range(TRIES):
+        new_state = current_state.copy()
+        for i in range(10):
+            new_state[i] += (random.randint(-10,10))/100
+            new_state[i] = min(new_state[i], 1)
+            new_state[i] = max(new_state[i], 0)
+        swap, f = check_this_const(current_bot, new_state)
+        if swap:
+            current_bot = f
+    return current_bot
 
-def optimize_const(bot_to_optimize, benchmark_bot, const_range):
-    with ThreadPoolExecutor(12) as executor:
-        for i in const_range:
-            executor.submit(check_this_const, bot_to_optimize, benchmark_bot, i)
 
-    return good_consts
+
+
+
 
 
 
 
 # print(bot_battle("nabzan.py", "simple.py"))
-print(optimize_const("very_nabzan.py", "nabzan.py", [3,4,5]))
