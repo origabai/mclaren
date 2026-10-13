@@ -549,6 +549,12 @@ class MyBot(ArazimWarsBot):
         Calculate the targeted_enemy_index and strategy for sending bloons
         """
 
+        SPECIAL_STRATS = [
+            ECONOMY_ECONOMY.LEAD,
+            ECONOMY_ECONOMY.CAMO,
+            ECONOMY_ECONOMY.CAMO_LEAD,
+        ]
+
         # Enemy fixed weakness change to next_enemy
         if (
             (
@@ -581,27 +587,22 @@ class MyBot(ArazimWarsBot):
             if not self.context.is_player_active(i):  # Ignore dead players
                 continue
 
-            self.next_enemy = i
+            if self.is_player_camo_lead(i) and self.strategy not in SPECIAL_STRATS:
+                self.targeted_enemy = i
+                self.strategy = ECONOMY_ECONOMY.CAMO_LEAD
+            elif self.is_player_camo(i) and self.strategy not in SPECIAL_STRATS:
+                self.targeted_enemy = i
+                self.strategy = ECONOMY_ECONOMY.CAMO
+            elif self.is_player_lead(i) and self.strategy not in SPECIAL_STRATS:
+                self.targeted_enemy = i
+                self.strategy = ECONOMY_ECONOMY.LEAD
 
-            if damages_camo and (strat != ECONOMY_ECONOMY.CAMO):
-                index = i
-                strat = ECONOMY_ECONOMY.CAMO
-            elif (
-                lead
-                and strat != ECONOMY_ECONOMY.ECONOMY
-                and (strat != ECONOMY_ECONOMY.LEAD)
-            ):
-                index = i
-                strat = ECONOMY_ECONOMY.LEAD
-            elif ld and (
-                strat == ECONOMY_ECONOMY.ECONOMY or (strat == ECONOMY_ECONOMY.CAMO_LEAD)
-            ):
-                index = i
-                strat = ECONOMY_ECONOMY.CAMO_LEAD
-            elif strat == ECONOMY_ECONOMY.ECONOMY:
-                index = i
-        self.targeted_enemy = index
-        self.strategy = strat
+            if (
+                i == self.targeted_enemy
+            ):  # Don' pick next enemy that you are already targeting
+                continue
+
+            self.next_enemy = i
 
     #####EMOTE######
     def handle_emotes(self) -> None:
