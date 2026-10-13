@@ -252,6 +252,7 @@ class MyBot(ArazimWarsBot):
         self.emote_timer = 0
         self.spam_timer = 0
         self.strategy = ECONOMY_ECONOMY.ECONOMY
+        self.context.ban_monkey(Monkeys.SNIPER_MONKEY)
 
     def get_round(self) -> int:
         return self.round
