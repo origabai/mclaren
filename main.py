@@ -189,7 +189,7 @@ class ECONOMY_ECONOMY(Enum):
     CUSTOM = 2
     LEAD = 3
     CAMO = 4
-    CAMMO_LEAD = 5
+    CAMO_LEAD = 5
     REGROW_RAINBOW = 6
 
 
@@ -207,12 +207,10 @@ class MyBot(ArazimWarsBot):
         self.monkeys_spending_roundly = 0
         self.emote_index = 0
         self.emote_wait = False
-        self.wait = 0
         self.prev_health = 0
-        self.enemy = None
 
-        self.targeted_enemy_index = self.get_other_player_index()
-        self.next_enemy_index = self.get_other_player_index()
+        self.targeted_enemy = self.get_other_player_index()
+        self.next_enemy = self.get_other_player_index()
 
         self.action_index = 0
         self.map = self.context.get_map()
@@ -443,7 +441,7 @@ class MyBot(ArazimWarsBot):
             best_bloon.value < EcoBloons.MOAB.value
             and self.is_camo_available()
             and (
-                strategy == ECONOMY_ECONOMY.CAMMO_LEAD
+                strategy == ECONOMY_ECONOMY.CAMO_LEAD
                 or strategy == ECONOMY_ECONOMY.CAMO
             )
         )
@@ -457,7 +455,7 @@ class MyBot(ArazimWarsBot):
 
         # Send the bloon
         result = self.context.send_bloons(
-            self.targeted_enemy_index,
+            self.targeted_enemy,
             best_bloon,
             is_camo=is_camo,
             is_regen=is_regrow,
@@ -524,72 +522,86 @@ class MyBot(ArazimWarsBot):
                 filter_func = self.is_latest_bloon_available
             case ECONOMY_ECONOMY.DAMAGE:
                 filter_func = self.is_latest_moab_available
-            case ECONOMY_ECONOMY.CAMMO_LEAD | ECONOMY_ECONOMY.LEAD:
+            case ECONOMY_ECONOMY.CAMO_LEAD | ECONOMY_ECONOMY.LEAD:
                 filter_func = self.is_latest_lead_available
             case ECONOMY_ECONOMY.REGROW_RAINBOW:
                 filter_func = self.is_latest_rainbow_available
         return dict(filter(filter_func, ECO_BLOONS_INFO.items()))
 
-    def is_player_camo_lead(self, num: int) -> tuple[bool, bool, bool]:
-        monkeys = self.context.get_player_monkeys(num)
-        lead = False
-        camo = False
-        camo_lead = False
-        for monkey in monkeys:
-            is_camo = can_monkey_see_camo(monkey)
-            is_lead = can_monkey_shoot_lead(monkey)
-            lead = lead or is_lead
-            camo = camo or is_camo
-            camo_lead = camo_lead or (is_camo and is_lead)
-        return lead, camo, camo_lead
+    def is_player_camo(self, index: int) -> bool:
+        """Checks wether a player can be attacked by camo."""
+        monkeys = self.context.get_player_monkeys(index)
+
+        return all(not can_monkey_see_camo(monkey) for monkey in monkeys)
+
+    def is_player_lead(self, index: int) -> bool:
+        """Checks wether a player can be attacked by lead."""
+        monkeys = self.context.get_player_monkeys(index)
+
+        return all(not can_monkey_shoot_lead(monkey) for monkey in monkeys)
+
+    def is_player_camo_lead(self, index: int) -> bool:
+        """Checks wether a player can be attacked by camo_lead."""
+        return self.is_player_lead(index) and self.is_player_camo(index)
 
     def find_someone_to_bully(self) -> None:
         """
-        claculate and self.targeted_enemy_index and self.strategy
-        wait is the timer until the re run
+        Calculate the targeted_enemy_index and strategy for sending bloons
         """
-        self.wait -= 1
+
+        # Enemy fixed weakness change to next_enemy
         if (
-            self.enemy is not None
-            and self.context.is_player_active(self.enemy)
-            and self.wait != 0
+            (
+                self.strategy == ECONOMY_ECONOMY.CAMO  # Enemy fixed camo
+                and self.is_player_camo(self.targeted_enemy)
+            )
+            or (
+                self.strategy == ECONOMY_ECONOMY.LEAD  # Enemy fixed lead
+                and self.is_player_lead(self.targeted_enemy)
+            )
+            or (
+                self.strategy == ECONOMY_ECONOMY.CAMO_LEAD  # Enemy fixed camo lead
+                and self.is_player_camo_lead(self.targeted_enemy)
+            )
         ):
-            return
+            self.targeted_enemy = self.next_enemy
+            self.strategy = ECONOMY_ECONOMY.ECONOMY
+
+        # Targeted enemy is dead move to next enemy
+        if not self.context.is_player_active(self.targeted_enemy):
+            self.targeted_enemy = self.next_enemy
+
         players_count = self.context.get_player_count()
-        my_num = self.context.get_current_player_index()
-        health = 0
-        index = 0
-        strat = ECONOMY_ECONOMY.ECONOMY
+        my_index = self.context.get_current_player_index()
+
         for i in range(players_count):
-            if i == my_num:
+            if i == my_index:  # Can't send bloons to myself
                 continue
-            other_health = self.context.get_player_health(i)
-            lead, cemo, ld = self.is_player_camo_lead(i)
-            if cemo and (strat != ECONOMY_ECONOMY.CAMO or health < other_health):
-                health = other_health
+
+            if not self.context.is_player_active(i):  # Ignore dead players
+                continue
+
+            self.next_enemy = i
+
+            if damages_camo and (strat != ECONOMY_ECONOMY.CAMO):
                 index = i
                 strat = ECONOMY_ECONOMY.CAMO
             elif (
                 lead
                 and strat != ECONOMY_ECONOMY.ECONOMY
-                and (strat != ECONOMY_ECONOMY.LEAD or health < other_health)
+                and (strat != ECONOMY_ECONOMY.LEAD)
             ):
-                health = other_health
                 index = i
                 strat = ECONOMY_ECONOMY.LEAD
             elif ld and (
-                strat == ECONOMY_ECONOMY.ECONOMY
-                or (strat == ECONOMY_ECONOMY.CAMMO_LEAD and other_health > health)
+                strat == ECONOMY_ECONOMY.ECONOMY or (strat == ECONOMY_ECONOMY.CAMO_LEAD)
             ):
-                health = other_health
                 index = i
-                strat = ECONOMY_ECONOMY.CAMMO_LEAD
-            elif strat == ECONOMY_ECONOMY.ECONOMY and other_health > health:
-                health = other_health
+                strat = ECONOMY_ECONOMY.CAMO_LEAD
+            elif strat == ECONOMY_ECONOMY.ECONOMY:
                 index = i
-        self.targeted_enemy_index = index
+        self.targeted_enemy = index
         self.strategy = strat
-        self.wait = 60
 
     #####EMOTE######
     def handle_emotes(self) -> None:
