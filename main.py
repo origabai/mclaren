@@ -618,7 +618,7 @@ PLACING_LAYOUTS = {
             ["Ninja Monkey"],
             ["Ninja Monkey"],
             *([["UPGRADE", 0, False]] * 2),
-            *([["UPGRADE", 0, True]] * 2),
+            *([["UPGRADE", 1, True]] * 2),
             ["Super Monkey"],
             *([["UPGRADE", 3, True]] * 2),
             *([["UPGRADE", 2, True]] * 4),
@@ -928,17 +928,27 @@ class MyBot(ArazimWarsBot):
         return placement
 
     def find_valid_placements(
-        self, monkey_radius: float, samples: int = 1000
+        self, monkey_radius: float, spacing=6
     ) -> list[tuple[float, float]]:
         track_clearance = monkey_radius + self.context.get_track_width() / 2
         route = self.context.get_bloon_route() + self.context.get_eco_bloon_route()
-        existing_monkeys = self.context.get_player_monkeys(self.get_player_index())
+        center = (MAP_WIDTH / 2, MAP_HEIGHT / 2)
+        x_min, x_max = monkey_radius, MAP_WIDTH - monkey_radius
+        y_min, y_max = monkey_radius, MAP_HEIGHT - monkey_radius
+        min_i = math.ceil((x_min - center[0]) / spacing)
+        max_i = math.floor((x_max - center[0]) / spacing)
+        min_j = math.ceil((y_min - center[1]) / spacing)
+        max_j = math.floor((y_max - center[1]) / spacing)
+        candidates = sorted(
+            (
+                (center[0] + i * spacing, center[1] + j * spacing)
+                for i in range(min_i, max_i + 1)
+                for j in range(min_j, max_j + 1)
+            ),
+            key=lambda point: (point[0] - center[0]) ** 2 + (point[1] - center[1]) ** 2,
+        )
         valid_points: list[tuple[float, float]] = []
-        for _ in range(samples):
-            point = (
-                random.uniform(monkey_radius, MAP_WIDTH - monkey_radius),
-                random.uniform(monkey_radius, MAP_HEIGHT - monkey_radius),
-            )
+        for point in candidates:
             if any(
                 _distance_to_segment(point, line) < track_clearance for line in route
             ):
@@ -946,13 +956,11 @@ class MyBot(ArazimWarsBot):
             if any(
                 math.dist(point, monkey.position)
                 < monkey_radius + MONKEY_RADII[monkey.kind]
-                for monkey in existing_monkeys
+                for monkey in self.monkeys
             ):
                 continue
             valid_points.append(point)
-        return (
-            valid_points if valid_points else self.find_valid_placements(monkey_radius)
-        )
+        return valid_points or [center]
 
     def run(self) -> None:
         self.update_round()
