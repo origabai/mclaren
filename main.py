@@ -91,6 +91,8 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
 CURRENT_MAX_BLOON = EcoBloons.GROUPED_PINK
 LEAD_MAX_BLOON = EcoBloons.SPACED_LEAD
 MIN_MOAB_CLASS = EcoBloons.BFB
+REGROW_RAINBOW_MAX_BLOON = EcoBloons.GROUPED_RAINBOW
+
 
 MAX_QUEUE_SIZE = 5
 
@@ -188,6 +190,7 @@ class ECONOMY_ECONOMY(Enum):
     LEAD = 3
     CAMO = 4
     CAMMO_LEAD = 5
+    REGROW_RAINBOW = 6
 
 
 class MyBot(ArazimWarsBot):
@@ -224,7 +227,10 @@ class MyBot(ArazimWarsBot):
         return self.round
 
     def update_round(self) -> None:
-        if self.context.get_round_times()[self.round + 1] <= self.context.get_current_steps():
+        if (
+            self.context.get_round_times()[self.round + 1]
+            <= self.context.get_current_steps()
+        ):
             self.round += 1
 
     def get_economy_budget(self) -> int:
@@ -257,8 +263,14 @@ class MyBot(ArazimWarsBot):
             # Get the upgrade row:
             is_upgrade_row_top = action[2]
             # Get the monkey's current level in that row:
-            monkey_level_in_row = monkey_to_upgrade.top_level if is_upgrade_row_top else monkey_to_upgrade.bottom_level
-            return UPGRADE_COSTS[monkey_to_upgrade.kind][is_upgrade_row_top][monkey_level_in_row]
+            monkey_level_in_row = (
+                monkey_to_upgrade.top_level
+                if is_upgrade_row_top
+                else monkey_to_upgrade.bottom_level
+            )
+            return UPGRADE_COSTS[monkey_to_upgrade.kind][is_upgrade_row_top][
+                monkey_level_in_row
+            ]
 
         else:
             return MONKEY_COSTS[MONKEY_NAMES[action[0]]]
@@ -300,9 +312,13 @@ class MyBot(ArazimWarsBot):
             return
 
         self.monkeys_saving = self.context.get_money() - int(self.context.get_eco())
-        monkey_add = int(self.context.get_eco() * (0.3 + math.sqrt(1 / self.round) * 0.7))
+        monkey_add = int(
+            self.context.get_eco() * (0.3 + math.sqrt(1 / self.round) * 0.7)
+        )
         self.monkey_budget = self.monkeys_saving + monkey_add
-        self.economy_budget = self.economy_saving + int(self.context.get_eco()) - monkey_add
+        self.economy_budget = (
+            self.economy_saving + int(self.context.get_eco()) - monkey_add
+        )
 
         curr_health = self.context.get_player_health(self.get_player_index())
         if curr_health < self.prev_health:
@@ -327,7 +343,11 @@ class MyBot(ArazimWarsBot):
                 # the monkey can shoot camo lead! prioritize them
 
                 for bloon in targets:
-                    if bloon.is_camo and bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
+                    if (
+                        bloon.is_camo
+                        and bloon.kind == Bloons.LEAD
+                        and can_monkey_shoot_bloon(monkey, bloon)
+                    ):
                         self.context.target_bloon(monkey_index, bloon.index)
                         found_target = True
                         break
@@ -338,7 +358,9 @@ class MyBot(ArazimWarsBot):
             if can_monkey_shoot_lead(monkey):
                 # shoot lead if we can
                 for bloon in targets:
-                    if bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
+                    if bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(
+                        monkey, bloon
+                    ):
                         self.context.target_bloon(monkey_index, bloon.index)
                         found_target = True
                         break
@@ -369,7 +391,9 @@ class MyBot(ArazimWarsBot):
     def place_monkey(self, monkey: Monkeys, position: tuple[float, float]) -> bool:
         result = self.context.place_monkey(monkey, position)
         if result == Exceptions.OK:
-            self.monkeys.append(MonkeyInfo(monkey, position, 0, 0, 0))  # MONKEY DIRECTION NOT KNOWN FOR FIRST FRAME
+            self.monkeys.append(
+                MonkeyInfo(monkey, position, 0, 0, 0)
+            )  # MONKEY DIRECTION NOT KNOWN FOR FIRST FRAME
             return True
         elif (
             result == Exceptions.OUT_OF_MAP
@@ -420,10 +444,16 @@ class MyBot(ArazimWarsBot):
         # self.context.log_info(f"2. Available bloons: {available_bloons}")
 
         # sort available bloons
-        sorted_bloons = sorted(available_bloons.items(), key=lambda x: x[1].availability_round)
+        sorted_bloons = sorted(
+            available_bloons.items(), key=lambda x: x[1].availability_round
+        )
 
         is_camo = self.is_camo_available() and (
             strategy == ECONOMY_ECONOMY.CAMMO_LEAD or strategy == ECONOMY_ECONOMY.CAMO
+        )
+
+        is_regrow = self.is_regrow_available() and (
+            strategy == ECONOMY_ECONOMY.REGROW_RAINBOW
         )
 
         # Send the bloon
@@ -431,6 +461,7 @@ class MyBot(ArazimWarsBot):
             self.targeted_enemy_index,
             sorted_bloons[-1][0],
             is_camo=is_camo,
+            is_regen=is_regrow,
         )
 
         # Return how much budget was used
@@ -441,25 +472,52 @@ class MyBot(ArazimWarsBot):
             return self.get_economy_budget()
 
     def is_camo_available(self) -> bool:
+        """Returns if camo is available to send"""
         return self.get_round() >= 8
+
+    def is_regrow_available(self) -> bool:
+        """Returns if regrow is available to send"""
+        return self.get_round() >= 12
 
     def is_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if a bloon is available"""
-        return ecobloon[1].availability_round <= self.get_round() and ecobloon[1].cost <= self.get_economy_budget()
+        return (
+            ecobloon[1].availability_round <= self.get_round()
+            and ecobloon[1].cost <= self.get_economy_budget()
+        )
 
-    def is_latest_bloon_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
+    def is_latest_bloon_available(
+        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
+    ) -> bool:
         """Returns if an ecobloon is available to be sent according to round and funds."""
-        return self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
+        return (
+            self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
+        )
 
-    def is_latest_lead_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
+    def is_latest_rainbow_available(
+        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
+    ) -> bool:
+        """Returns if an ecobloon is available to be sent according to round and funds."""
+        return (
+            self.is_available(ecobloon)
+            and ecobloon[0].value <= REGROW_RAINBOW_MAX_BLOON.value
+        )
+
+    def is_latest_lead_available(
+        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
+    ) -> bool:
         """Returns if an ecobloon is available to be sent according to round and funds."""
         return self.is_available(ecobloon) and ecobloon[0].value <= LEAD_MAX_BLOON.value
 
-    def is_latest_moab_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
+    def is_latest_moab_available(
+        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
+    ) -> bool:
         """Returns if an ecobloon is available and is a moab class."""
         return self.is_available(ecobloon) and ecobloon[0].value >= MIN_MOAB_CLASS.value
 
-    def get_available_bloons(self, strategy: ECONOMY_ECONOMY) -> dict[EcoBloons, EcoBloonsInfo]:
+    def get_available_bloons(
+        self, strategy: ECONOMY_ECONOMY
+    ) -> dict[EcoBloons, EcoBloonsInfo]:
         """Returns a list of all available bloons according to the strategy."""
         filter_func = self.is_latest_bloon_available
 
@@ -470,7 +528,8 @@ class MyBot(ArazimWarsBot):
                 filter_func = self.is_latest_moab_available
             case ECONOMY_ECONOMY.CAMMO_LEAD | ECONOMY_ECONOMY.LEAD:
                 filter_func = self.is_latest_lead_available
-
+            case ECONOMY_ECONOMY.REGROW_RAINBOW:
+                filter_func = self.is_latest_rainbow_available
         return dict(filter(filter_func, ECO_BLOONS_INFO.items()))
 
     def is_player_camo_lead(self, num: int) -> tuple[bool, bool, bool]:
@@ -492,7 +551,11 @@ class MyBot(ArazimWarsBot):
         wait is the timer until the re run
         """
         self.wait -= 1
-        if self.enemy is not None and self.context.is_player_active(self.enemy) and self.wait != 0:
+        if (
+            self.enemy is not None
+            and self.context.is_player_active(self.enemy)
+            and self.wait != 0
+        ):
             return
         players_count = self.context.get_player_count()
         my_num = self.context.get_current_player_index()
@@ -508,12 +571,17 @@ class MyBot(ArazimWarsBot):
                 health = other_health
                 index = i
                 strat = ECONOMY_ECONOMY.CAMO
-            elif lead and strat != ECONOMY_ECONOMY.ECONOMY and (strat != ECONOMY_ECONOMY.LEAD or health < other_health):
+            elif (
+                lead
+                and strat != ECONOMY_ECONOMY.ECONOMY
+                and (strat != ECONOMY_ECONOMY.LEAD or health < other_health)
+            ):
                 health = other_health
                 index = i
                 strat = ECONOMY_ECONOMY.LEAD
             elif ld and (
-                strat == ECONOMY_ECONOMY.ECONOMY or (strat == ECONOMY_ECONOMY.CAMMO_LEAD and other_health > health)
+                strat == ECONOMY_ECONOMY.ECONOMY
+                or (strat == ECONOMY_ECONOMY.CAMMO_LEAD and other_health > health)
             ):
                 health = other_health
                 index = i
