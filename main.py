@@ -343,7 +343,10 @@ class MyBot(ArazimWarsBot):
             self.economy_budget = 0
             if curr_health < self.prev_health:
                 self.hit_cooldown = 2 * 60
-                if self.monkey_boost > 0:
+                if (
+                    self.monkey_boost > 0
+                    and self.context.get_player_remaining_tower_boost_time(self.get_player_index()) == 0
+                ):
                     self.monkey_boost -= 1
                     self.context.tower_boost()
             else:
