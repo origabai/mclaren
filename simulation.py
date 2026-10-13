@@ -19,12 +19,13 @@ def bot_battle(bot1, bot2, games = GAMES):
 good_consts = []
 
 def check_this_const(bot_to_optimize, benchmark_bot, i):
-    temp_file_name = "nabaz_" + "".join([choice("abcdefghijkl") for i in range(10)])  +".py"
+    temp_file_name = "nabaz\\nabaz_" + "".join([choice("abcdefghijkl") for i in range(10)])  +".py"
     with open(temp_file_name, "w") as g:
-        g.write("CONST_TO_OPTIMIZE = " + i + "\n")
+        g.write("CONST_TO_OPTIMIZE = " + str(i) + "\n")
         with open(bot_to_optimize, "r") as f:
             g.write(f.read())
-    if bot_battle(temp_file_name, benchmark_bot, 1) == 1:
+    print(i)
+    if bot_battle(temp_file_name, benchmark_bot) == 1:
         good_consts.append(i)
 
     
@@ -36,9 +37,10 @@ def optimize_const(bot_to_optimize, benchmark_bot, const_range):
         for i in const_range:
             executor.submit(check_this_const, bot_to_optimize, benchmark_bot, i)
 
-    print(good_consts)
+    return good_consts
 
 
 
 
-print(bot_battle("nabzan.py", "simple.py"))
+# print(bot_battle("nabzan.py", "simple.py"))
+print(optimize_const("very_nabzan.py", "nabzan.py", [3,4,5]))
