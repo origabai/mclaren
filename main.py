@@ -33,6 +33,7 @@ MONKEY_NAMES = {
     "Ninja Monkey": Monkeys.NINJA_MONKEY,
     "Super Monkey": Monkeys.SUPER_MONKEY,
     "Tack Shooter": Monkeys.TACK_SHOOTER,
+    "Sniper Monkey": Monkeys.SNIPER_MONKEY,
 }
 
 # targets
@@ -91,6 +92,8 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
 CURRENT_MAX_BLOON = EcoBloons.GROUPED_PINK
 LEAD_MAX_BLOON = EcoBloons.SPACED_LEAD
 MIN_MOAB_CLASS = EcoBloons.BFB
+REGROW_RAINBOW_MAX_BLOON = EcoBloons.GROUPED_RAINBOW
+
 
 MAX_QUEUE_SIZE = 5
 
@@ -188,6 +191,7 @@ class ECONOMY_ECONOMY(Enum):
     LEAD = 3
     CAMO = 4
     CAMMO_LEAD = 5
+    REGROW_RAINBOW = 6
 
 
 class MyBot(ArazimWarsBot):
@@ -398,19 +402,26 @@ class MyBot(ArazimWarsBot):
             return False
 
     def upgrade_monkey(self, monkey_index: int, top_row: bool) -> bool:
+        if top_row:
+            self.monkeys[monkey_index].top_level += 1
+        else:
+            self.monkeys[monkey_index].bottom_level += 1
         result = self.context.upgrade_monkey(monkey_index, top_row)
         return result != Exceptions.NOT_ENOUGH_MONEY
 
     def handle_monkeys(self) -> None:
-        if self.action_index >= len(PLACING_LAYOUTS[self.map]):
+        placing_layout = PLACING_LAYOUTS[self.map]
+        if isinstance(placing_layout, dict):
+            placing_layout = placing_layout[["STANDARD", "BANANZA"][self.context.get_mode() == GameMode.BANANZA]]
+        if self.action_index >= len(placing_layout):
             self.actions_complete = True
             return
         budget = self.get_monkey_budget()
         used_money = 0
-        next_action = PLACING_LAYOUTS[self.map][self.action_index]
+        next_action = placing_layout[self.action_index]
         if used_money + self._get_action_price(next_action) < budget:
-            action_result = self._perform_action(next_action)
-            if action_result:
+            successful_action = self._perform_action(next_action)
+            if successful_action:
                 self.action_index += 1
 
     ############baloons sections################
@@ -440,11 +451,14 @@ class MyBot(ArazimWarsBot):
             strategy == ECONOMY_ECONOMY.CAMMO_LEAD or strategy == ECONOMY_ECONOMY.CAMO
         )
 
+        is_regrow = self.is_regrow_available() and (strategy == ECONOMY_ECONOMY.REGROW_RAINBOW)
+
         # Send the bloon
         result = self.context.send_bloons(
             self.targeted_enemy_index,
             sorted_bloons[-1][0],
             is_camo=is_camo,
+            is_regen=is_regrow,
         )
 
         # Return how much budget was used
@@ -455,7 +469,12 @@ class MyBot(ArazimWarsBot):
             return self.get_economy_budget()
 
     def is_camo_available(self) -> bool:
+        """Returns if camo is available to send"""
         return self.get_round() >= 8
+
+    def is_regrow_available(self) -> bool:
+        """Returns if regrow is available to send"""
+        return self.get_round() >= 12
 
     def is_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if a bloon is available"""
@@ -464,6 +483,10 @@ class MyBot(ArazimWarsBot):
     def is_latest_bloon_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if an ecobloon is available to be sent according to round and funds."""
         return self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
+
+    def is_latest_rainbow_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
+        """Returns if an ecobloon is available to be sent according to round and funds."""
+        return self.is_available(ecobloon) and ecobloon[0].value <= REGROW_RAINBOW_MAX_BLOON.value
 
     def is_latest_lead_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if an ecobloon is available to be sent according to round and funds."""
@@ -484,7 +507,8 @@ class MyBot(ArazimWarsBot):
                 filter_func = self.is_latest_moab_available
             case ECONOMY_ECONOMY.CAMMO_LEAD | ECONOMY_ECONOMY.LEAD:
                 filter_func = self.is_latest_lead_available
-
+            case ECONOMY_ECONOMY.REGROW_RAINBOW:
+                filter_func = self.is_latest_rainbow_available
         return dict(filter(filter_func, ECO_BLOONS_INFO.items()))
 
     def is_player_camo_lead(self, num: int) -> tuple[bool, bool, bool]:
