@@ -840,8 +840,9 @@ class MyBot(ArazimWarsBot):
     def _get_layout(self) -> typing.Any:
         layouts: typing.Any = PLACING_LAYOUTS[self.map]
         for banned in self.context.get_banned_monkeys():
-            if banned in layouts:
-                return layouts[banned]
+            layout = layouts.get(banned)
+            if layout:
+                return layout
         return layouts[None]
 
     def handle_monkeys(self) -> None:
