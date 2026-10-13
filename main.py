@@ -109,9 +109,9 @@ PLACING_LAYOUTS = {
         ["Ninja Monkey", 140, 397],
         ["Super Monkey", 241, 219],
         *([["UPGRADE", 3, True]] * 2),
+        ["Super Monkey", 180, 289],
         *([["UPGRADE", 5, True]] * 2),
         *([["UPGRADE", 5, False]] * 2),
-        ["Super Monkey", 180, 289],
         ["Super Monkey", 84, 350],
         *([["UPGRADE", 6, True]] * 2),
         *([["UPGRADE", 6, False]] * 2),
@@ -124,6 +124,33 @@ PLACING_LAYOUTS = {
         *([["UPGRADE", 8, False]] * 2),
         *([["UPGRADE", 9, True]] * 3),
         *([["UPGRADE", 9, False]] * 2),
+    ],
+    Maps.SHAPES: [
+        ["Dart Monkey", 103, 149],
+        *([["UPGRADE", 0, False]] * 1),
+        ["Tack Shooter", 192, 302],
+        *([["UPGRADE", 1, True]] * 2),
+        ["Ninja Monkey", 306, 340],
+        ["Ninja Monkey", 190, 244],
+        *([["UPGRADE", 0, True]] * 2),
+        ["Super Monkey", 125, 400],
+        *([["UPGRADE", 4, True]] * 1),
+        *([["UPGRADE", 0, True]] * 2),
+        *([["UPGRADE", 4, True]] * 1),
+        *([["UPGRADE", 2, True]] * 4),
+        ["Super Monkey", 133, 485],
+        *([["UPGRADE", 5, True]] * 2),
+        *([["UPGRADE", 3, True]] * 4),
+        ["Super Monkey", 388, 333],
+        *([["UPGRADE", 6, True]] * 2),
+        ["Super Monkey", 243, 509],
+        *([["UPGRADE", 7, True]] * 2),
+        ["Super Monkey", 203, 135],
+        *([["UPGRADE", 8, True]] * 2),
+        ["Super Monkey", 424, 481],
+        *([["UPGRADE", 9, True]] * 2),
+        ["Super Monkey", 39, 131],
+        *([["UPGRADE", 10, True]] * 2),
     ],
     Maps.YELLOW_BRICK: [
         ["Dart Monkey", 151, 241],
@@ -264,7 +291,8 @@ class MyBot(ArazimWarsBot):
             is_upgrade_row_top = action[2]
             # Get the monkey's current level in that row:
             monkey_level_in_row = monkey_to_upgrade.top_level if is_upgrade_row_top else monkey_to_upgrade.bottom_level
-            return UPGRADE_COSTS[monkey_to_upgrade.kind][is_upgrade_row_top][monkey_level_in_row]
+            upgrade_row = 0 if is_upgrade_row_top else 1
+            return UPGRADE_COSTS[monkey_to_upgrade.kind][upgrade_row][monkey_level_in_row]
 
         else:
             return MONKEY_COSTS[MONKEY_NAMES[action[0]]]
@@ -412,8 +440,7 @@ class MyBot(ArazimWarsBot):
                 self.monkeys[monkey_index].top_level += 1
             else:
                 self.monkeys[monkey_index].bottom_level += 1
-            result = self.context.upgrade_monkey(monkey_index, top_row)
-        return result != Exceptions.NOT_ENOUGH_MONEY
+        return result == Exceptions.OK
 
     def handle_monkeys(self) -> None:
         placing_layout = PLACING_LAYOUTS[self.map]
