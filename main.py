@@ -474,6 +474,9 @@ class MyBot(ArazimWarsBot):
         return dict(filter(filter_func, ECO_BLOONS_INFO.items()))
 
     def is_player_camo_lead(self, num: int) -> tuple[bool, bool, bool]:
+        """
+        is player has deffence to cemo lead or cemolead
+        """
         monkeys = self.context.get_player_monkeys(num)
         lead = False
         camo = False
