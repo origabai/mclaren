@@ -240,8 +240,10 @@ class MyBot(ArazimWarsBot):
         self.economy_saving = 0
         self.hit_cooldown = 0
 
+        # Enemy targeting
         self.targeted_enemy = self.get_other_player_index()
         self.next_enemy = self.get_other_player_index()
+        self.rainbows_sent = 0
 
         self.action_index = 0
         self.map = self.context.get_map()
@@ -486,6 +488,9 @@ class MyBot(ArazimWarsBot):
 
         # Return how much budget was used
         if result == Result.OK:
+            if self.strategy == ECONOMY_ECONOMY.REGROW_RAINBOW:
+                self.rainbows_sent += 1
+
             return self.get_economy_budget() - sorted_bloons[-1][1].cost
         else:
             return self.get_economy_budget()
@@ -537,13 +542,18 @@ class MyBot(ArazimWarsBot):
         """Checks wether a player can be attacked by camo."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return all(not can_monkey_see_camo(monkey) for monkey in monkeys)
+        return (
+            len(list(filter(lambda monkey: can_monkey_see_camo(monkey), monkeys))) <= 2
+        )
 
     def is_player_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by lead."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return all(not can_monkey_shoot_lead(monkey) for monkey in monkeys)
+        return (
+            len(list(filter(lambda monkey: can_monkey_shoot_lead(monkey), monkeys)))
+            <= 2
+        )
 
     def is_player_camo_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by camo_lead."""
@@ -564,18 +574,21 @@ class MyBot(ArazimWarsBot):
         if (
             (
                 self.strategy == ECONOMY_ECONOMY.CAMO  # Enemy fixed camo
-                and self.is_player_camo(self.targeted_enemy)
+                and not self.is_player_camo(self.targeted_enemy)
             )
             or (
                 self.strategy == ECONOMY_ECONOMY.LEAD  # Enemy fixed lead
-                and self.is_player_lead(self.targeted_enemy)
+                and not self.is_player_lead(self.targeted_enemy)
             )
             or (
                 self.strategy == ECONOMY_ECONOMY.CAMO_LEAD  # Enemy fixed camo lead
-                and self.is_player_camo_lead(self.targeted_enemy)
+                and not self.is_player_camo_lead(self.targeted_enemy)
             )
         ):
             self.targeted_enemy = self.next_enemy
+        if self.get_round() >= 16 and self.rainbows_sent < MAX_QUEUE_SIZE:
+            self.strategy = ECONOMY_ECONOMY.REGROW_RAINBOW
+        else:
             self.strategy = ECONOMY_ECONOMY.ECONOMY
 
         # Targeted enemy is dead move to next enemy
