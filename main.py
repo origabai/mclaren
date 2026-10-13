@@ -1034,12 +1034,17 @@ class MyBot(ArazimWarsBot):
                 self.strategy == ECONOMY_ECONOMY.CAMO_LEAD  # Enemy fixed camo lead
                 and not self.is_player_camo_lead(self.targeted_enemy)
             )
+            or (
+                self.strategy == ECONOMY_ECONOMY.REGROW_RAINBOW
+                and self.rainbows_sent >= 3
+            )
         ):
             self.targeted_enemy = self.next_enemy
-        if self.get_round() >= 16 and self.rainbows_sent < MAX_QUEUE_SIZE:
-            self.strategy = ECONOMY_ECONOMY.REGROW_RAINBOW
-        else:
-            self.strategy = ECONOMY_ECONOMY.ECONOMY
+
+            if self.get_round() >= 16 and self.rainbows_sent < 3:
+                self.strategy = ECONOMY_ECONOMY.REGROW_RAINBOW
+            else:
+                self.strategy = ECONOMY_ECONOMY.ECONOMY
 
         # Targeted enemy is dead move to next enemy
         if not self.context.is_player_active(self.targeted_enemy):
