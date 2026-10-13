@@ -121,7 +121,8 @@ PLACING_LAYOUTS = {
             *([["UPGRADE", 8, False]] * 2),
             *([["UPGRADE", 9, True]] * 3),
             *([["UPGRADE", 9, False]] * 2),
-        ]
+        ],
+        Monkeys.DART_MONKEY: [],
     },
     Maps.SHAPES: {
         None: [
