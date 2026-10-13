@@ -33,6 +33,7 @@ MONKEY_NAMES = {
     "Ninja Monkey": Monkeys.NINJA_MONKEY,
     "Super Monkey": Monkeys.SUPER_MONKEY,
     "Tack Shooter": Monkeys.TACK_SHOOTER,
+    "Sniper Monkey": Monkeys.SNIPER_MONKEY,
 }
 
 # targets
@@ -405,6 +406,10 @@ class MyBot(ArazimWarsBot):
             return False
 
     def upgrade_monkey(self, monkey_index: int, top_row: bool) -> bool:
+        if top_row:
+            self.monkeys[monkey_index].top_level += 1
+        else:
+            self.monkeys[monkey_index].bottom_level += 1
         result = self.context.upgrade_monkey(monkey_index, top_row)
         return result != Exceptions.NOT_ENOUGH_MONEY
 
@@ -417,12 +422,13 @@ class MyBot(ArazimWarsBot):
         if self.action_index >= len(placing_layout):
             self.actions_complete = True
             return
-        budget = self._get_monkey_budget()
+        budget = self.get_monkey_budget()
         used_money = 0
         next_action = placing_layout[self.action_index]
         if used_money + self._get_action_price(next_action) < budget:
-            self._perform_action(next_action)
-            self.action_index += 1
+            successful_action = self._perform_action(next_action)
+            if successful_action:
+                self.action_index += 1
 
     ############baloons sections################
     def send_bloons(self, strategy: ECONOMY_ECONOMY) -> int:

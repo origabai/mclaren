@@ -148,5 +148,6 @@ class MyBot(ArazimWarsBot):
         used_money = 0
         next_action = placing_layout[self.action_index]
         if used_money + self._get_action_price(next_action) < budget:
-            self._perform_action(next_action)
-            self.action_index += 1
+            successful_action = self._perform_action(next_action)
+            if successful_action:
+                self.action_index += 1
