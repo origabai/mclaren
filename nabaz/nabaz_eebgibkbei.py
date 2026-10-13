@@ -1,4 +1,4 @@
-PERCENTAGE_TO_MONKEY = [0.9253038032159261, 1, 0.6815060477512359, 0.6618280598720258, 0.47585957475880986, 0.4359525422107502, 0.4100420969703894, 0.4691047901649598, 0.5073617695044397, 0.5195222107018319, 0.415, 0.40909090909090906, 0.4041666666666667, 0.39999999999999997, 0.3964285714285714, 0.3933333333333333, 0.390625, 0.388235294117647, 0.38611111111111107, 0.38421052631578945, 0.38249999999999995, 0.38095238095238093, 0.3795454545454545, 0.3782608695652174, 0.3770833333333333, 0.376, 0.375, 0.37407407407407406, 0.3732142857142857, 0.37241379310344824]
+PERCENTAGE_TO_MONKEY = [1, 1, 0.6766536078480411, 0.5572965114837521, 0.5193169467242922, 0.4702380103635643, 0.46325802516575326, 0.4404069270660869, 0.4301929046772501, 0.4296145745235775, 0.4180043754013303, 0.4083636337122664, 0.4136424625506898, 0.3931251963641749, 0.4041558050918428, 0.39785982689323995, 0.3902620242267335, 0.3792151639224542, 0.39502787124707356, 0.3896455681495927, 0.3864087416465201, 0.37973253974646054, 0.38458378174413177, 0.3689991976878465, 0.37895538377589566, 0.3847799662126007, 0.3824323728814055, 0.3821236237004531, 0.3732954827040526, 0.3685247112587433]
 import random
 import typing
 from enum import Enum
@@ -9,6 +9,7 @@ from api import *
 the mighty main of the afek the mighty pytzov founder
 author: afek the mighty pytzov founder
 """
+
 
 # Only pick the cool emotes of course
 EMOTES = [
@@ -239,6 +240,7 @@ class MyBot(ArazimWarsBot):
         self.monkey_saving = self.prev_money
         self.economy_saving = 0
         self.hit_cooldown = 0
+        self.monkey_boost = 3
 
         # Enemy targeting
         self.targeted_enemy = self.get_other_player_index()
@@ -253,6 +255,7 @@ class MyBot(ArazimWarsBot):
         self.emote_timer = 0
         self.spam_timer = 0
         self.strategy = ECONOMY_ECONOMY.ECONOMY
+        self.context.ban_monkey(Monkeys.SNIPER_MONKEY)
 
     def get_round(self) -> int:
         return self.round
@@ -350,6 +353,15 @@ class MyBot(ArazimWarsBot):
             self.economy_budget = 0
             if curr_health < self.prev_health:
                 self.hit_cooldown = 2 * 60
+                if (
+                    self.monkey_boost > 0
+                    and self.context.get_player_remaining_tower_boost_time(
+                        self.get_player_index()
+                    )
+                    == 0
+                ):
+                    self.monkey_boost -= 1
+                    self.context.tower_boost()
             else:
                 self.hit_cooldown -= 1
         self.prev_health = curr_health
@@ -468,6 +480,16 @@ class MyBot(ArazimWarsBot):
         Returns:
             Amount of budget not used.
         """
+        if (
+            self.get_alive_player_count() <= 4
+            and self.context.get_player_remaining_bloon_boost_time(
+                self.context.get_current_player_index()
+            )
+            <= 0.0000001
+            and self.get_round() >= 8
+        ):
+            self.context.bloon_boost()
+
         # Prevent sending if full
         if self.context.get_eco_queue_size() >= MAX_QUEUE_SIZE:
             return self.get_economy_budget()
@@ -663,6 +685,13 @@ class MyBot(ArazimWarsBot):
                 continue
 
             self.next_enemy = i
+
+    def get_alive_player_count(self) -> int:
+        return sum(
+            1
+            for player in range(self.context.get_player_count())
+            if self.context.is_player_active(player)
+        )
 
     #####EMOTE######
     def handle_emotes(self) -> None:

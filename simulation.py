@@ -66,8 +66,8 @@ def localsearch(bot_to_optimize):
         swap, f = check_this_const(current_bot, new_state)
         if swap:
             current_bot = f
+            current_state = new_state
         print(current_bot)
-        current_state = new_state
     return current_bot
 
 
