@@ -239,6 +239,7 @@ class MyBot(ArazimWarsBot):
         self.monkey_saving = self.prev_money
         self.economy_saving = 0
         self.hit_cooldown = 0
+        self.monkey_boost = 3
 
         # Enemy targeting
         self.targeted_enemy = self.get_other_player_index()
@@ -351,6 +352,9 @@ class MyBot(ArazimWarsBot):
             self.economy_budget = 0
             if curr_health < self.prev_health:
                 self.hit_cooldown = 2 * 60
+                if self.monkey_boost > 0:
+                    self.monkey_boost -= 1
+                    self.context.tower_boost()
             else:
                 self.hit_cooldown -= 1
         self.prev_health = curr_health
@@ -595,18 +599,13 @@ class MyBot(ArazimWarsBot):
         """Checks wether a player can be attacked by camo."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return (
-            len(list(filter(lambda monkey: can_monkey_see_camo(monkey), monkeys))) <= 2
-        )
+        return len(list(filter(lambda monkey: can_monkey_see_camo(monkey), monkeys))) <= 2
 
     def is_player_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by lead."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return (
-            len(list(filter(lambda monkey: can_monkey_shoot_lead(monkey), monkeys)))
-            <= 2
-        )
+        return len(list(filter(lambda monkey: can_monkey_shoot_lead(monkey), monkeys))) <= 2
 
     def is_player_camo_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by camo_lead."""
