@@ -34,6 +34,7 @@ MONKEY_NAMES = {
     "Tack Shooter": Monkeys.TACK_SHOOTER,
 }
 
+
 # targets
 
 
@@ -96,113 +97,120 @@ MAX_QUEUE_SIZE = 5
 
 
 PLACING_LAYOUTS = {
-    Maps.TEMPLE: [
-        ["Dart Monkey", 455, 109],
-        *([["UPGRADE", 0, False]] * 1),
-        ["Dart Monkey", 284, 161],
-        ["Ninja Monkey", 350, 165],
-        ["Ninja Monkey", 140, 397],
-        ["Super Monkey", 241, 219],
-        *([["UPGRADE", 3, True]] * 3),
-        ["Super Monkey", 180, 289],
-        *([["UPGRADE", 5, True]] * 2),
-        *([["UPGRADE", 5, False]] * 2),
-        ["Super Monkey", 84, 350],
-        *([["UPGRADE", 6, True]] * 2),
-        *([["UPGRADE", 6, False]] * 2),
-        ["Super Monkey", 42, 426],
-        ["Super Monkey", 40, 509],
-        *([["UPGRADE", 7, True]] * 2),
-        *([["UPGRADE", 7, False]] * 2),
-        ["Super Monkey", 343, 49],
-        *([["UPGRADE", 8, True]] * 2),
-        *([["UPGRADE", 8, False]] * 2),
-        *([["UPGRADE", 9, True]] * 3),
-        *([["UPGRADE", 9, False]] * 2),
-    ],
-    Maps.SHAPES: [
-        ["Dart Monkey",103,149],
-        *([["UPGRADE", 0, False]] * 1),
-        ["Tack Shooter",192,302],
-        *([["UPGRADE", 1, True]] * 2),
-        ["Ninja Monkey",306,340],
-        ["Ninja Monkey",190,244],
-        *([["UPGRADE", 0, True]] * 2),
-        ["Super Monkey",125,400],
-        *([["UPGRADE", 4, True]] * 1),
-        *([["UPGRADE", 0, True]] * 2),
-        *([["UPGRADE", 4, True]] * 1),
-        *([["UPGRADE", 2, True]] * 4),
-        ["Super Monkey",133,485],
-        *([["UPGRADE", 5, True]] * 2),
-        *([["UPGRADE", 3, True]] * 4),
-        ["Super Monkey",388,333],
-        *([["UPGRADE", 6, True]] * 2),
-        ["Super Monkey", 243, 509],
-        *([["UPGRADE", 7, True]] * 2),
-        ["Super Monkey",203,135],
-        *([["UPGRADE", 8, True]] * 2),
-        ["Super Monkey",424,481],
-        *([["UPGRADE", 9, True]] * 2),
-        ["Super Monkey",39,131]
-        *([["UPGRADE", 10, True]] * 2),
-    ],
-    Maps.YELLOW_BRICK: [
-        ["Dart Monkey", 151, 241],
-        *([["UPGRADE", 0, False]] * 1),
-        ["Dart Monkey", 347, 233],
-        ["Ninja Monkey", 241, 315],
-        ["Ninja Monkey", 173, 455],
-        *([["UPGRADE", 0, True]] * 2),
-        ["Super Monkey", 246, 136],
-        *([["UPGRADE", 4, True]] * 1),
-        *([["UPGRADE", 0, True]] * 2),
-        *([["UPGRADE", 4, True]] * 1),
-        *([["UPGRADE", 2, True]] * 4),
-        ["Super Monkey", 77, 302],
-        *([["UPGRADE", 5, True]] * 2),
-        *([["UPGRADE", 3, True]] * 4),
-        ["Super Monkey", 428, 358],
-        *([["UPGRADE", 6, True]] * 2),
-        ["Super Monkey", 243, 509],
-        *([["UPGRADE", 7, True]] * 2),
-        ["Super Monkey", 61, 128],
-        *([["UPGRADE", 8, True]] * 2),
-        ["Super Monkey", 435, 123],
-        *([["UPGRADE", 9, True]] * 2),
-        ["Super Monkey", 338, 434],
-        *([["UPGRADE", 10, True]] * 2),
-    ],
-    Maps.INTERCHANGE: [
-        ["Dart Monkey", 116, 101],
-        *([["UPGRADE", 0, False]] * 1),
-        ["Dart Monkey", 348, 290],
-        ["Tack Shooter", 173, 251],
-        ["Ninja Monkey", 353, 482],
-        *([["UPGRADE", 0, True]] * 4),
-        ["Super Monkey", 57, 336],
-        *([["UPGRADE", 4, True]] * 3),
-        *([["UPGRADE", 2, True]] * 4),
-        ["Super Monkey", 376, 375],
-        *([["UPGRADE", 5, True]] * 2),
-        *([["UPGRADE", 5, False]] * 2),
-        *([["UPGRADE", 3, True]] * 4),
-        ["Super Monkey", 61, 168],
-        *([["UPGRADE", 6, True]] * 2),
-        *([["UPGRADE", 6, False]] * 2),
-        ["Super Monkey", 388, 199],
-        ["Super Monkey", 332, 78],
-        *([["UPGRADE", 7, True]] * 2),
-        *([["UPGRADE", 7, False]] * 2),
-        ["Super Monkey", 54, 480],
-        ["Super Monkey", 413, 290],
-        *([["UPGRADE", 8, True]] * 2),
-        *([["UPGRADE", 8, False]] * 2),
-        *([["UPGRADE", 9, True]] * 3),
-        *([["UPGRADE", 9, False]] * 2),
-        *([["UPGRADE", 10, True]] * 3),
-        *([["UPGRADE", 10, False]] * 2),
-    ],
+    Maps.TEMPLE: {
+        None: [
+            ["Dart Monkey", 455, 109],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Dart Monkey", 284, 161],
+            ["Ninja Monkey", 350, 165],
+            ["Ninja Monkey", 140, 397],
+            ["Super Monkey", 241, 219],
+            *([["UPGRADE", 3, True]] * 3),
+            ["Super Monkey", 180, 289],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 5, False]] * 2),
+            ["Super Monkey", 84, 350],
+            *([["UPGRADE", 6, True]] * 2),
+            *([["UPGRADE", 6, False]] * 2),
+            ["Super Monkey", 42, 426],
+            ["Super Monkey", 40, 509],
+            *([["UPGRADE", 7, True]] * 2),
+            *([["UPGRADE", 7, False]] * 2),
+            ["Super Monkey", 343, 49],
+            *([["UPGRADE", 8, True]] * 2),
+            *([["UPGRADE", 8, False]] * 2),
+            *([["UPGRADE", 9, True]] * 3),
+            *([["UPGRADE", 9, False]] * 2),
+        ]
+    },
+    Maps.SHAPES: {
+        None: [
+            ["Dart Monkey", 103, 149],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Tack Shooter", 192, 302],
+            *([["UPGRADE", 1, True]] * 2),
+            ["Ninja Monkey", 306, 340],
+            ["Ninja Monkey", 190, 244],
+            *([["UPGRADE", 0, True]] * 2),
+            ["Super Monkey", 125, 400],
+            *([["UPGRADE", 4, True]] * 1),
+            *([["UPGRADE", 0, True]] * 2),
+            *([["UPGRADE", 4, True]] * 1),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Super Monkey", 133, 485],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 3, True]] * 4),
+            ["Super Monkey", 388, 333],
+            *([["UPGRADE", 6, True]] * 2),
+            ["Super Monkey", 243, 509],
+            *([["UPGRADE", 7, True]] * 2),
+            ["Super Monkey", 203, 135],
+            *([["UPGRADE", 8, True]] * 2),
+            ["Super Monkey", 424, 481],
+            *([["UPGRADE", 9, True]] * 2),
+            ["Super Monkey", 39, 131] * ([["UPGRADE", 10, True]] * 2),
+        ]
+    },
+    Maps.YELLOW_BRICK: {
+        None: [
+            ["Dart Monkey", 151, 241],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Dart Monkey", 347, 233],
+            ["Ninja Monkey", 241, 315],
+            ["Ninja Monkey", 173, 455],
+            *([["UPGRADE", 0, True]] * 2),
+            ["Super Monkey", 246, 136],
+            *([["UPGRADE", 4, True]] * 1),
+            *([["UPGRADE", 0, True]] * 2),
+            *([["UPGRADE", 4, True]] * 1),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Super Monkey", 77, 302],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 3, True]] * 4),
+            ["Super Monkey", 428, 358],
+            *([["UPGRADE", 6, True]] * 2),
+            ["Super Monkey", 243, 509],
+            *([["UPGRADE", 7, True]] * 2),
+            ["Super Monkey", 61, 128],
+            *([["UPGRADE", 8, True]] * 2),
+            ["Super Monkey", 435, 123],
+            *([["UPGRADE", 9, True]] * 2),
+            ["Super Monkey", 338, 434],
+            *([["UPGRADE", 10, True]] * 2),
+        ]
+    },
+    Maps.INTERCHANGE: {
+        None: [
+            ["Dart Monkey", 116, 101],
+            *([["UPGRADE", 0, False]] * 1),
+            ["Dart Monkey", 348, 290],
+            ["Tack Shooter", 173, 251],
+            ["Ninja Monkey", 353, 482],
+            *([["UPGRADE", 0, True]] * 4),
+            ["Super Monkey", 57, 336],
+            *([["UPGRADE", 4, True]] * 3),
+            *([["UPGRADE", 2, True]] * 4),
+            ["Super Monkey", 376, 375],
+            *([["UPGRADE", 5, True]] * 2),
+            *([["UPGRADE", 5, False]] * 2),
+            *([["UPGRADE", 3, True]] * 4),
+            ["Super Monkey", 61, 168],
+            *([["UPGRADE", 6, True]] * 2),
+            *([["UPGRADE", 6, False]] * 2),
+            ["Super Monkey", 388, 199],
+            ["Super Monkey", 332, 78],
+            *([["UPGRADE", 7, True]] * 2),
+            *([["UPGRADE", 7, False]] * 2),
+            ["Super Monkey", 54, 480],
+            ["Super Monkey", 413, 290],
+            *([["UPGRADE", 8, True]] * 2),
+            *([["UPGRADE", 8, False]] * 2),
+            *([["UPGRADE", 9, True]] * 3),
+            *([["UPGRADE", 9, False]] * 2),
+            *([["UPGRADE", 10, True]] * 3),
+            *([["UPGRADE", 10, False]] * 2),
+        ]
+    },
 }
 
 
@@ -397,6 +405,7 @@ class MyBot(ArazimWarsBot):
             result == Exceptions.OUT_OF_MAP
             or result == Exceptions.TOO_CLOSE_TO_BLOON_ROUTE
             or result == Exceptions.TOO_CLOSE_TO_OTHER_MONKEY
+            or result == Exceptions.MONKEY_BANNED
         ):
             self.context.log_warning(f"Couldn't place monkey because of: {result}")
             return False
@@ -409,17 +418,23 @@ class MyBot(ArazimWarsBot):
         result = self.context.upgrade_monkey(monkey_index, top_row)
         return result != Exceptions.NOT_ENOUGH_MONEY
 
+    def _get_layout(self):
+        # Get PLACING_LAYOUTS[self.map][None] if none of our monkeys are banned, else PLACING_LAYOUTS[self.map][banned_monkey]
+        return PLACING_LAYOUTS[self.map].get(
+            self.context.get_banned_monkeys()[0], PLACING_LAYOUTS[self.map][None]
+        )
+
     def handle_monkeys(self):
-        if self.action_index >= len(PLACING_LAYOUTS[self.map]):
+        layout = self._get_layout()
+        if self.action_index >= len(layout):
             self.actions_complete = True
             return
         budget = self.get_monkey_budget()
         used_money = 0
-        next_action = PLACING_LAYOUTS[self.map][self.action_index]
+        next_action = layout[self.action_index]
         if used_money + self._get_action_price(next_action) < budget:
-            action_result = self._perform_action(next_action)
-            if action_result:
-                self.action_index += 1
+            self._perform_action(next_action)
+            self.action_index += 1
 
     ############baloons sections################
     def send_bloons(self, strategy: ECONOMY_ECONOMY) -> int:
