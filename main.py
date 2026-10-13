@@ -1,4 +1,3 @@
-import math
 import random
 import typing
 from enum import Enum
@@ -10,7 +9,7 @@ the mighty main of the afek the mighty pytzov founder
 author: afek the mighty pytzov founder
 """
 
-
+PERCENTAGE_TO_MONKEY = [1] + [0.35 + 0.65 * (1 / i) for i in range(1, 30)]
 # Only pick the cool emotes of course
 EMOTES = [
     # Emote.NONE,
@@ -257,10 +256,7 @@ class MyBot(ArazimWarsBot):
         return self.round
 
     def update_round(self) -> None:
-        if (
-            self.context.get_round_times()[self.round]
-            <= self.context.get_current_steps()
-        ):
+        if self.context.get_round_times()[self.round] <= self.context.get_current_steps():
             self.round += 1
 
     def get_economy_budget(self) -> int:
@@ -293,15 +289,9 @@ class MyBot(ArazimWarsBot):
             # Get the upgrade row:
             is_upgrade_row_top = action[2]
             # Get the monkey's current level in that row:
-            monkey_level_in_row = (
-                monkey_to_upgrade.top_level
-                if is_upgrade_row_top
-                else monkey_to_upgrade.bottom_level
-            )
+            monkey_level_in_row = monkey_to_upgrade.top_level if is_upgrade_row_top else monkey_to_upgrade.bottom_level
             upgrade_row = 0 if is_upgrade_row_top else 1
-            return UPGRADE_COSTS[monkey_to_upgrade.kind][upgrade_row][
-                monkey_level_in_row
-            ]
+            return UPGRADE_COSTS[monkey_to_upgrade.kind][upgrade_row][monkey_level_in_row]
 
         else:
             return MONKEY_COSTS[MONKEY_NAMES[action[0]]]
@@ -339,7 +329,7 @@ class MyBot(ArazimWarsBot):
             self.monkey_budget += 500
         self.monkey_budget = self.monkey_saving
         self.economy_budget = self.economy_saving
-        adding = int(new_money * (0.1 + math.sqrt(1 / self.round) * 0.9))
+        adding = int(new_money * PERCENTAGE_TO_MONKEY[self.round])
         if new_money > 0:
             self.monkey_budget += adding
             self.economy_budget += new_money - adding
@@ -372,11 +362,7 @@ class MyBot(ArazimWarsBot):
                 # the monkey can shoot camo lead! prioritize them
 
                 for bloon in targets:
-                    if (
-                        bloon.is_camo
-                        and bloon.kind == Bloons.LEAD
-                        and can_monkey_shoot_bloon(monkey, bloon)
-                    ):
+                    if bloon.is_camo and bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
                         self.context.target_bloon(monkey_index, bloon.index)
                         found_target = True
                         break
@@ -387,9 +373,7 @@ class MyBot(ArazimWarsBot):
             if can_monkey_shoot_lead(monkey):
                 # shoot lead if we can
                 for bloon in targets:
-                    if bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(
-                        monkey, bloon
-                    ):
+                    if bloon.kind == Bloons.LEAD and can_monkey_shoot_bloon(monkey, bloon):
                         self.context.target_bloon(monkey_index, bloon.index)
                         found_target = True
                         break
@@ -420,9 +404,7 @@ class MyBot(ArazimWarsBot):
     def place_monkey(self, monkey: Monkeys, position: tuple[float, float]) -> bool:
         result = self.context.place_monkey(monkey, position)
         if result == Exceptions.OK:
-            self.monkeys.append(
-                MonkeyInfo(monkey, position, 0, 0, 0)
-            )  # MONKEY DIRECTION NOT KNOWN FOR FIRST FRAME
+            self.monkeys.append(MonkeyInfo(monkey, position, 0, 0, 0))  # MONKEY DIRECTION NOT KNOWN FOR FIRST FRAME
             return True
         elif (
             result == Exceptions.OUT_OF_MAP
@@ -445,9 +427,7 @@ class MyBot(ArazimWarsBot):
     def handle_monkeys(self) -> None:
         placing_layout = PLACING_LAYOUTS[self.map]
         if isinstance(placing_layout, dict):
-            placing_layout = placing_layout[
-                ["STANDARD", "BANANZA"][self.context.get_mode() == GameMode.BANANZA]
-            ]
+            placing_layout = placing_layout[["STANDARD", "BANANZA"][self.context.get_mode() == GameMode.BANANZA]]
         if self.action_index >= len(placing_layout):
             self.actions_complete = True
             return
@@ -477,9 +457,7 @@ class MyBot(ArazimWarsBot):
             return self.get_economy_budget()
 
         # sort available bloons
-        sorted_bloons = sorted(
-            available_bloons.items(), key=lambda x: x[1].availability_round
-        )
+        sorted_bloons = sorted(available_bloons.items(), key=lambda x: x[1].availability_round)
 
         # Get best bloon
         best_bloon = sorted_bloons[-1][0]
@@ -488,10 +466,7 @@ class MyBot(ArazimWarsBot):
         is_camo = (
             best_bloon.value < EcoBloons.MOAB.value
             and self.is_camo_available()
-            and (
-                strategy == ECONOMY_ECONOMY.CAMO_LEAD
-                or strategy == ECONOMY_ECONOMY.CAMO
-            )
+            and (strategy == ECONOMY_ECONOMY.CAMO_LEAD or strategy == ECONOMY_ECONOMY.CAMO)
         )
 
         # Decides if should send regrow bloons
@@ -525,43 +500,25 @@ class MyBot(ArazimWarsBot):
 
     def is_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if a bloon is available"""
-        return (
-            ecobloon[1].availability_round <= self.get_round()
-            and ecobloon[1].cost <= self.get_economy_budget()
-        )
+        return ecobloon[1].availability_round <= self.get_round() and ecobloon[1].cost <= self.get_economy_budget()
 
-    def is_latest_bloon_available(
-        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
-    ) -> bool:
+    def is_latest_bloon_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if an ecobloon is available to be sent according to round and funds."""
-        return (
-            self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
-        )
+        return self.is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
 
-    def is_latest_rainbow_available(
-        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
-    ) -> bool:
+    def is_latest_rainbow_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if an ecobloon is available to be sent according to round and funds."""
-        return (
-            self.is_available(ecobloon)
-            and ecobloon[0].value <= REGROW_RAINBOW_MAX_BLOON.value
-        )
+        return self.is_available(ecobloon) and ecobloon[0].value <= REGROW_RAINBOW_MAX_BLOON.value
 
-    def is_latest_lead_available(
-        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
-    ) -> bool:
+    def is_latest_lead_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if an ecobloon is available to be sent according to round and funds."""
         return self.is_available(ecobloon) and ecobloon[0].value <= LEAD_MAX_BLOON.value
 
-    def is_latest_moab_available(
-        self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]
-    ) -> bool:
+    def is_latest_moab_available(self, ecobloon: tuple[EcoBloons, EcoBloonsInfo]) -> bool:
         """Returns if an ecobloon is available and is a moab class."""
         return self.is_available(ecobloon) and ecobloon[0].value >= MIN_MOAB_CLASS.value
 
-    def get_available_bloons(
-        self, strategy: ECONOMY_ECONOMY
-    ) -> dict[EcoBloons, EcoBloonsInfo]:
+    def get_available_bloons(self, strategy: ECONOMY_ECONOMY) -> dict[EcoBloons, EcoBloonsInfo]:
         """Returns a list of all available bloons according to the strategy."""
         filter_func = self.is_latest_bloon_available
 
@@ -645,9 +602,7 @@ class MyBot(ArazimWarsBot):
                 self.targeted_enemy = i
                 self.strategy = ECONOMY_ECONOMY.LEAD
 
-            if (
-                i == self.targeted_enemy
-            ):  # Don' pick next enemy that you are already targeting
+            if i == self.targeted_enemy:  # Don' pick next enemy that you are already targeting
                 continue
 
             self.next_enemy = i
