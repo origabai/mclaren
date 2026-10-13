@@ -1,26 +1,28 @@
-from api import ArazimWarsBot, Emote, Exceptions, Monkeys
 import random
 
+from api import ArazimWarsBot, Emote, Exceptions, Monkeys
+
 EMOTES = [
-    # Emote.NONE,
+    Emote.NONE,
     Emote.ANGRY,
-    # Emote.COOL,
-    # Emote.CRYING,
+    Emote.COOL,
+    Emote.CRYING,
     Emote.FACEPALM,
-    # Emote.IDEA_THOUGHT,
-    # Emote.LAUGHING,
-    # Emote.LOVE,
+    Emote.IDEA_THOUGHT,
+    Emote.LAUGHING,
+    Emote.LOVE,
     Emote.POINTING,
-    # Emote.SHOCKED,
-    # Emote.SMILE,
-    # Emote.THUMBS_DOWN,
-    # Emote.THUMBS_UP,
+    Emote.SHOCKED,
+    Emote.SMILE,
+    Emote.THUMBS_DOWN,
+    Emote.THUMBS_UP,
 ]
+
 
 class MyBot(ArazimWarsBot):
     def setup(self) -> None:
-        self.emote_index = 0
-        self.emote_wait = False
+        self.player_count = 0
+        self.emote_timer = 120
 
     def run(self) -> None:
         self.handle_emotes()
@@ -30,16 +32,13 @@ class MyBot(ArazimWarsBot):
         emote handling
         """
 
-        self.emote_index += 1
-        if random.randint(0, 60 * 4) == 0:
-            self.emote_wait = True
+        if self.emote_timer <= 0:
+            self.context.display_emote(Emote.COOL)
+        self.emote_timer -= 1
 
-        if self.emote_index % 120 == 0:
-            self.emote_wait = False
-        
-        if self.emote_wait:
-            return
+        curr_count = self.context.get_player_count()
+        if curr_count < self.player_count:
+            self.context.display_emote(Emote.LAUGHING)
+            self.emote_timer = 60 * 4
 
-        self.context.display_emote(EMOTES[(self.emote_index) % len(EMOTES)])
-        
-        
+        self.player_count = curr_count

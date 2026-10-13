@@ -6,19 +6,23 @@ MIN_MOAB_CLASS = api.EcoBloons.BFB
 
 MAX_QUEUE_SIZE = 5
 
+
 def get_economy_budget() -> int:
     return 500
 
+
 def get_round() -> int:
-    return 10    
+    return 10
+
 
 def get_player_index() -> int:
     return 0
 
+
 def send_bloons(strategy: ECONOMY_ECONOMY) -> int:
-    """ 
+    """
     Decides according to the current strategy which bloons to send.
-    
+
     Returns:
         Amount of budget not used.
     """
@@ -35,10 +39,7 @@ def send_bloons(strategy: ECONOMY_ECONOMY) -> int:
     available_bloons = sorted(available_bloons.items(), key=lambda x: x[1].availability_round)
 
     # Send the bloon
-    result = self.context.send_bloons(
-        get_player_index(),
-        available_bloons[-1][0]
-    )
+    result = self.context.send_bloons(get_player_index(), available_bloons[-1][0])
 
     # Return how much budget was used
     if result == api.Result.OK:
@@ -46,29 +47,24 @@ def send_bloons(strategy: ECONOMY_ECONOMY) -> int:
     else:
         return get_economy_budget()
 
+
 def is_available(ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
-    """ Returns if a bloon is available"""
-    return (
-        ecobloon[1].availability_round <= get_round() and \
-        ecobloon[1].cost <= get_economy_budget()
-    )
+    """Returns if a bloon is available"""
+    return ecobloon[1].availability_round <= get_round() and ecobloon[1].cost <= get_economy_budget()
+
 
 def is_latest_bloon_available(ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
-    """ Returns if an ecobloon is available to be sent according to round and funds. """
-    return (
-        is_available(ecobloon) and \
-        ecobloon[0].value <= CURRENT_MAX_BLOON.value
-    )
+    """Returns if an ecobloon is available to be sent according to round and funds."""
+    return is_available(ecobloon) and ecobloon[0].value <= CURRENT_MAX_BLOON.value
+
 
 def is_latest_moab_available(ecobloon: tuple[api.EcoBloons, api.EcoBloonsInfo]) -> bool:
-    """ Returns if an ecobloon is available and is a moab class. """
-    return (
-        is_available(ecobloon) and \
-        ecobloon[0].value >= MIN_MOAB_CLASS.value
-    )
+    """Returns if an ecobloon is available and is a moab class."""
+    return is_available(ecobloon) and ecobloon[0].value >= MIN_MOAB_CLASS.value
+
 
 def get_available_bloons(strategy: ECONOMY_ECONOMY):
-    """ Returns a list of all available bloons according to the strategy. """
+    """Returns a list of all available bloons according to the strategy."""
     filter_func = is_latest_bloon_available
 
     match strategy:
