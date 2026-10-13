@@ -3,6 +3,7 @@ from api import (
     UPGRADE_COSTS,
     ArazimWarsBot,
     Exceptions,
+    GameMode,
     Maps,
     MonkeyInfo,
     Monkeys,
@@ -135,12 +136,17 @@ class MyBot(ArazimWarsBot):
         return result == Exceptions.NOT_ENOUGH_MONEY
 
     def run(self) -> None:
-        if self.action_index >= len(PLACING_LAYOUTS[self.map]):
+        placing_layout = PLACING_LAYOUTS[self.map]
+        if isinstance(placing_layout, dict):
+            placing_layout = placing_layout[
+                ["STANDARD", "BANANZA"][self.context.get_mode() == GameMode.BANANZA]
+            ]
+        if self.action_index >= len(placing_layout):
             self.actions_complete = True
             return
         budget = self._get_monkey_budget()
         used_money = 0
-        next_action = PLACING_LAYOUTS[self.map][self.action_index]
+        next_action = placing_layout[self.action_index]
         if used_money + self._get_action_price(next_action) < budget:
             self._perform_action(next_action)
             self.action_index += 1

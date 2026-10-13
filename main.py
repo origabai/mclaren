@@ -33,6 +33,7 @@ MONKEY_NAMES = {
     "Ninja Monkey": Monkeys.NINJA_MONKEY,
     "Super Monkey": Monkeys.SUPER_MONKEY,
     "Tack Shooter": Monkeys.TACK_SHOOTER,
+    "Sniper Monkey": Monkeys.SNIPER_MONKEY,
 }
 
 # targets
@@ -106,23 +107,50 @@ PLACING_LAYOUTS = {
         ["Dart Monkey", 284, 161],
         ["Ninja Monkey", 350, 165],
         ["Ninja Monkey", 140, 397],
+        *([["UPGRADE", 3, True]] * 2),
         ["Super Monkey", 241, 219],
-        *([["UPGRADE", 3, True]] * 3),
+        *([["UPGRADE", 4, True]] * 2),
         ["Super Monkey", 180, 289],
+        *([["UPGRADE", 4, False]] * 2),
+        ["Super Monkey", 84, 350],
         *([["UPGRADE", 5, True]] * 2),
         *([["UPGRADE", 5, False]] * 2),
-        ["Super Monkey", 84, 350],
-        *([["UPGRADE", 6, True]] * 2),
-        *([["UPGRADE", 6, False]] * 2),
         ["Super Monkey", 42, 426],
         ["Super Monkey", 40, 509],
+        *([["UPGRADE", 6, True]] * 2),
+        *([["UPGRADE", 6, False]] * 2),
+        ["Super Monkey", 343, 49],
         *([["UPGRADE", 7, True]] * 2),
         *([["UPGRADE", 7, False]] * 2),
-        ["Super Monkey", 343, 49],
-        *([["UPGRADE", 8, True]] * 2),
+        *([["UPGRADE", 8, True]] * 3),
         *([["UPGRADE", 8, False]] * 2),
-        *([["UPGRADE", 9, True]] * 3),
-        *([["UPGRADE", 9, False]] * 2),
+    ],
+    Maps.SHAPES: [
+        ["Dart Monkey", 103, 149],
+        *([["UPGRADE", 0, False]] * 1),
+        ["Tack Shooter", 192, 302],
+        *([["UPGRADE", 1, True]] * 2),
+        ["Ninja Monkey", 306, 340],
+        ["Ninja Monkey", 190, 244],
+        *([["UPGRADE", 0, True]] * 2),
+        ["Super Monkey", 125, 400],
+        *([["UPGRADE", 4, True]] * 1),
+        *([["UPGRADE", 0, True]] * 2),
+        *([["UPGRADE", 4, True]] * 1),
+        *([["UPGRADE", 2, True]] * 4),
+        ["Super Monkey", 133, 485],
+        *([["UPGRADE", 5, True]] * 2),
+        *([["UPGRADE", 3, True]] * 4),
+        ["Super Monkey", 388, 333],
+        *([["UPGRADE", 6, True]] * 2),
+        ["Super Monkey", 243, 509],
+        *([["UPGRADE", 7, True]] * 2),
+        ["Super Monkey", 203, 135],
+        *([["UPGRADE", 8, True]] * 2),
+        ["Super Monkey", 424, 481],
+        *([["UPGRADE", 9, True]] * 2),
+        ["Super Monkey", 39, 131],
+        *([["UPGRADE", 10, True]] * 2),
     ],
     Maps.YELLOW_BRICK: [
         ["Dart Monkey", 151, 241],
@@ -200,14 +228,17 @@ class MyBot(ArazimWarsBot):
         self.attempted_position = 0
         self.emote_index = 0
         self.defence = self.context.get_mode() == GameMode.DEFENSE
-        self.economy_saving = 0
-        self.monkeys_saving = 0
         self.round = 1
         self.monkeys: list[MonkeyInfo] = []
         self.monkeys_spending_roundly = 0
         self.emote_index = 0
         self.emote_wait = False
         self.prev_health = 0
+        self.enemy = None
+        self.prev_money = self.context.get_money()
+        self.monkey_saving = self.prev_money
+        self.economy_saving = 0
+        self.hit_cooldown = 0
 
         self.targeted_enemy = self.get_other_player_index()
         self.next_enemy = self.get_other_player_index()
@@ -226,7 +257,7 @@ class MyBot(ArazimWarsBot):
 
     def update_round(self) -> None:
         if (
-            self.context.get_round_times()[self.round + 1]
+            self.context.get_round_times()[self.round]
             <= self.context.get_current_steps()
         ):
             self.round += 1
@@ -266,7 +297,8 @@ class MyBot(ArazimWarsBot):
                 if is_upgrade_row_top
                 else monkey_to_upgrade.bottom_level
             )
-            return UPGRADE_COSTS[monkey_to_upgrade.kind][is_upgrade_row_top][
+            upgrade_row = 0 if is_upgrade_row_top else 1
+            return UPGRADE_COSTS[monkey_to_upgrade.kind][upgrade_row][
                 monkey_level_in_row
             ]
 
@@ -286,10 +318,11 @@ class MyBot(ArazimWarsBot):
         self.manage_budget()
         self.monkeys_spending_roundly = 0
         self.handle_monkeys()
-        self.monkeys_saving = self.monkeys_spending_roundly
+        self.monkey_saving = self.monkeys_spending_roundly
         if not self.defence:
             self.economy_saving = self.send_bloons(self.strategy)
         self.handle_emotes()
+        self.prev_money = self.context.get_money()
 
     def manage_budget(self) -> None:
         """
@@ -298,21 +331,28 @@ class MyBot(ArazimWarsBot):
         if self.defence:
             self.monkey_budget = self.context.get_money()
             return
-
-        self.monkeys_saving = self.context.get_money() - int(self.context.get_eco())
-        monkey_add = int(
-            self.context.get_eco() * (0.3 + math.sqrt(1 / self.round) * 0.7)
-        )
-        self.monkey_budget = self.monkeys_saving + monkey_add
-        self.economy_budget = (
-            self.economy_saving + int(self.context.get_eco()) - monkey_add
-        )
-
+        my_budget = self.context.get_money()
+        new_money = my_budget - self.prev_money
+        if self.economy_saving > 500:
+            self.economy_saving -= 500
+            self.monkey_budget += 500
+        self.monkey_budget = self.monkey_saving
+        self.economy_budget = self.economy_saving
+        adding = int(new_money * (0.15 + math.sqrt(1 / self.round) * 0.85))
+        if new_money > 0:
+            self.monkey_budget += adding
+            self.economy_budget += new_money - adding
         curr_health = self.context.get_player_health(self.get_player_index())
-        if curr_health < self.prev_health:
+        if curr_health < self.prev_health or self.hit_cooldown > 0:
             self.monkey_budget += self.economy_budget
             self.economy_budget = 0
+            if curr_health < self.prev_health:
+                self.hit_cooldown = 8 * 60
+            else:
+                self.hit_cooldown -= 1
         self.prev_health = curr_health
+        if my_budget > self.monkey_budget + self.economy_budget:
+            self.monkey_budget += my_budget - (self.monkey_budget + self.economy_budget)
 
     ############targets sections################
     def handle_targets(self) -> None:
@@ -387,28 +427,35 @@ class MyBot(ArazimWarsBot):
             result == Exceptions.OUT_OF_MAP
             or result == Exceptions.TOO_CLOSE_TO_BLOON_ROUTE
             or result == Exceptions.TOO_CLOSE_TO_OTHER_MONKEY
-        ):
-            self.context.log_warning(f"Couldn't place monkey because of: {result}")
-            return False
-        elif result == Exceptions.NOT_ENOUGH_MONEY:
+        ) or result == Exceptions.NOT_ENOUGH_MONEY:
             return False
         else:
             return False
 
     def upgrade_monkey(self, monkey_index: int, top_row: bool) -> bool:
         result = self.context.upgrade_monkey(monkey_index, top_row)
-        return result != Exceptions.NOT_ENOUGH_MONEY
+        if result == Result.OK:
+            if top_row:
+                self.monkeys[monkey_index].top_level += 1
+            else:
+                self.monkeys[monkey_index].bottom_level += 1
+        return result == Exceptions.OK
 
     def handle_monkeys(self) -> None:
-        if self.action_index >= len(PLACING_LAYOUTS[self.map]):
+        placing_layout = PLACING_LAYOUTS[self.map]
+        if isinstance(placing_layout, dict):
+            placing_layout = placing_layout[
+                ["STANDARD", "BANANZA"][self.context.get_mode() == GameMode.BANANZA]
+            ]
+        if self.action_index >= len(placing_layout):
             self.actions_complete = True
             return
         budget = self.get_monkey_budget()
         used_money = 0
-        next_action = PLACING_LAYOUTS[self.map][self.action_index]
+        next_action = placing_layout[self.action_index]
         if used_money + self._get_action_price(next_action) < budget:
-            action_result = self._perform_action(next_action)
-            if action_result:
+            successful_action = self._perform_action(next_action)
+            if successful_action:
                 self.action_index += 1
 
     ############baloons sections################
