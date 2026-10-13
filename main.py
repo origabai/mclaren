@@ -117,7 +117,7 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
 CURRENT_MAX_BLOON = EcoBloons.GROUPED_PINK
 LEAD_MAX_BLOON = EcoBloons.SPACED_LEAD
 MIN_MOAB_CLASS = EcoBloons.BFB
-REGROW_RAINBOW_MAX_BLOON = EcoBloons.GROUPED_RAINBOW
+REGROW_RAINBOW_MAX_BLOON = EcoBloons.SPACED_RAINBOW
 
 
 MAX_QUEUE_SIZE = 5
@@ -928,7 +928,7 @@ class MyBot(ArazimWarsBot):
             return
         my_budget = self.context.get_money()
         new_money = my_budget - self.prev_money
-        if self.economy_saving > 500:
+        if self.economy_saving > 12000:
             self.economy_saving -= 500
             self.monkey_budget += 500
         self.monkey_budget = self.monkey_saving
@@ -959,6 +959,26 @@ class MyBot(ArazimWarsBot):
             self.monkey_budget += my_budget - (self.monkey_budget + self.economy_budget)
 
     ############targets sections################
+    def evaluate_point(
+        self, point: tuple[int, int], monkey_range: int, lines: list[LineInfo]
+    ) -> float:
+        """Returns the average dist from lines."""
+
+        dist_sum = 0.0
+        dist_count = 0
+        for line in lines:
+            m = (line.start[1] - line.end[1]) / (
+                line.start[0] - line.end[0] + 0.00000000001
+            )
+            b = line.start[1] - m * line.start[0]
+
+            distance = abs(m * point[0] - point[1] + b) / math.sqrt(m**2 + 1)
+            if 0 < distance <= monkey_range:
+                dist_sum += 1 + (1 / distance)
+                dist_count += 1
+
+        return dist_sum / dist_count if dist_count > 0 else 10000000
+
     def handle_targets(self) -> None:
         """
         1. only shoot bloons you can target
@@ -1246,12 +1266,19 @@ class MyBot(ArazimWarsBot):
                 self.strategy == ECONOMY_ECONOMY.CAMO_LEAD  # Enemy fixed camo lead
                 and not self.is_player_camo_lead(self.targeted_enemy)
             )
+            or (
+                self.strategy == ECONOMY_ECONOMY.REGROW_RAINBOW
+                and self.rainbows_sent >= MAX_QUEUE_SIZE
+            )
         ):
             self.targeted_enemy = self.next_enemy
-        if self.get_round() >= 16 and self.rainbows_sent < MAX_QUEUE_SIZE:
-            self.strategy = ECONOMY_ECONOMY.REGROW_RAINBOW
-        else:
-            self.strategy = ECONOMY_ECONOMY.ECONOMY
+
+            if self.get_round() >= 19:
+                self.strategy = ECONOMY_ECONOMY.DAMAGE
+            elif self.get_round() >= 12 and self.rainbows_sent < MAX_QUEUE_SIZE:
+                self.strategy = ECONOMY_ECONOMY.REGROW_RAINBOW
+            else:
+                self.strategy = ECONOMY_ECONOMY.ECONOMY
 
         # Targeted enemy is dead move to next enemy
         if not self.context.is_player_active(self.targeted_enemy):
