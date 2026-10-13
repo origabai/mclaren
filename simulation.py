@@ -67,6 +67,7 @@ def localsearch(bot_to_optimize):
         if swap:
             current_bot = f
         print(current_bot)
+        current_state = new_state
     return current_bot
 
 
