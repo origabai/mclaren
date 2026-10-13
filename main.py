@@ -877,7 +877,7 @@ class MyBot(ArazimWarsBot):
                         return result
                 return False
 
-    def _find_ideal_monkey_location(self, monkey) -> tuple[int, int]:
+    def _find_ideal_monkey_location(self, monkey: Monkeys) -> tuple[float, float]:
         monkey_radius = MONKEY_RADII[monkey]
         valid_placements = self.find_valid_placements(monkey_radius)
         placement = max(
@@ -971,7 +971,7 @@ class MyBot(ArazimWarsBot):
 
     ############targets sections################
     def evaluate_point(
-        self, point: tuple[int, int], monkey_range: int, lines: list[LineInfo]
+        self, point: tuple[float, float], monkey_range: int, lines: list[LineInfo]
     ) -> float:
         """Returns the average dist from lines."""
 
