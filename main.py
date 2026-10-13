@@ -365,7 +365,10 @@ class MyBot(ArazimWarsBot):
                 self.hit_cooldown = 2 * 60
                 if (
                     self.monkey_boost > 0
-                    and self.context.get_player_remaining_tower_boost_time(self.get_player_index()) == 0
+                    and self.context.get_player_remaining_tower_boost_time(
+                        self.get_player_index()
+                    )
+                    == 0
                 ):
                     self.monkey_boost -= 1
                     self.context.tower_boost()
@@ -466,8 +469,8 @@ class MyBot(ArazimWarsBot):
                 self.monkeys[monkey_index].bottom_level += 1
         return result == Exceptions.OK
 
-    def _get_layout(self):
-        layouts = PLACING_LAYOUTS[self.map]
+    def _get_layout(self) -> typing.Any:
+        layouts: typing.Any = PLACING_LAYOUTS[self.map]
         for banned in self.context.get_banned_monkeys():
             if banned in layouts:
                 return layouts[banned]
@@ -481,9 +484,10 @@ class MyBot(ArazimWarsBot):
         budget = self.get_monkey_budget()
         used_money = 0
         next_action = layout[self.action_index]
-        if used_money + self._get_action_price(next_action) < budget:
-            if self._perform_action(next_action):
-                self.action_index += 1
+        if used_money + self._get_action_price(
+            next_action
+        ) < budget and self._perform_action(next_action):
+            self.action_index += 1
 
     ############baloons sections################
     def send_bloons(self, strategy: ECONOMY_ECONOMY) -> int:
@@ -619,13 +623,18 @@ class MyBot(ArazimWarsBot):
         """Checks wether a player can be attacked by camo."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return len(list(filter(lambda monkey: can_monkey_see_camo(monkey), monkeys))) <= 2
+        return (
+            len(list(filter(lambda monkey: can_monkey_see_camo(monkey), monkeys))) <= 2
+        )
 
     def is_player_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by lead."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return len(list(filter(lambda monkey: can_monkey_shoot_lead(monkey), monkeys))) <= 2
+        return (
+            len(list(filter(lambda monkey: can_monkey_shoot_lead(monkey), monkeys)))
+            <= 2
+        )
 
     def is_player_camo_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by camo_lead."""
