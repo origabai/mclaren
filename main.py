@@ -435,18 +435,30 @@ class MyBot(ArazimWarsBot):
             available_bloons.items(), key=lambda x: x[1].availability_round
         )
 
-        is_camo = self.is_camo_available() and (
-            strategy == ECONOMY_ECONOMY.CAMMO_LEAD or strategy == ECONOMY_ECONOMY.CAMO
+        # Get best bloon
+        best_bloon = sorted_bloons[-1][0]
+
+        # Decides if should send camo bloons
+        is_camo = (
+            best_bloon.value < EcoBloons.MOAB.value
+            and self.is_camo_available()
+            and (
+                strategy == ECONOMY_ECONOMY.CAMMO_LEAD
+                or strategy == ECONOMY_ECONOMY.CAMO
+            )
         )
 
-        is_regrow = self.is_regrow_available() and (
-            strategy == ECONOMY_ECONOMY.REGROW_RAINBOW
+        # Decides if should send regrow bloons
+        is_regrow = (
+            best_bloon.value < EcoBloons.MOAB.value
+            and self.is_regrow_available()
+            and (strategy == ECONOMY_ECONOMY.REGROW_RAINBOW)
         )
 
         # Send the bloon
         result = self.context.send_bloons(
             self.targeted_enemy_index,
-            sorted_bloons[-1][0],
+            best_bloon,
             is_camo=is_camo,
             is_regen=is_regrow,
         )
