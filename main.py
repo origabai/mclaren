@@ -105,7 +105,7 @@ PLACING_LAYOUTS = {
         ["Dart Monkey", 455, 109],
         *([["UPGRADE", 0, False]] * 1),
         ["Tack Shooter", 350, 165],
-        *([["UPGRADE", 3, True]] * 2),
+        *([["UPGRADE", 2, True]] * 2),
         ["Ninja Monkey", 284, 161],
         ["Ninja Monkey", 140, 397],
         *([["UPGRADE", 3, True]] * 2),
