@@ -1,3 +1,4 @@
+PERCENTAGE_TO_MONKEY = [1] + [0.35 + 0.65 * (1 / i) for i in range(1, 30)]
 import random
 import typing
 from enum import Enum
@@ -9,7 +10,7 @@ the mighty main of the afek the mighty pytzov founder
 author: afek the mighty pytzov founder
 """
 
-PERCENTAGE_TO_MONKEY = [1] + [0.35 + 0.65 * (1 / i) for i in range(1, 30)]
+
 # Only pick the cool emotes of course
 EMOTES = [
     # Emote.NONE,
@@ -354,7 +355,10 @@ class MyBot(ArazimWarsBot):
                 self.hit_cooldown = 2 * 60
                 if (
                     self.monkey_boost > 0
-                    and self.context.get_player_remaining_tower_boost_time(self.get_player_index()) == 0
+                    and self.context.get_player_remaining_tower_boost_time(
+                        self.get_player_index()
+                    )
+                    == 0
                 ):
                     self.monkey_boost -= 1
                     self.context.tower_boost()
@@ -602,13 +606,18 @@ class MyBot(ArazimWarsBot):
         """Checks wether a player can be attacked by camo."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return len(list(filter(lambda monkey: can_monkey_see_camo(monkey), monkeys))) <= 2
+        return (
+            len(list(filter(lambda monkey: can_monkey_see_camo(monkey), monkeys))) <= 2
+        )
 
     def is_player_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by lead."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return len(list(filter(lambda monkey: can_monkey_shoot_lead(monkey), monkeys))) <= 2
+        return (
+            len(list(filter(lambda monkey: can_monkey_shoot_lead(monkey), monkeys)))
+            <= 2
+        )
 
     def is_player_camo_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by camo_lead."""
