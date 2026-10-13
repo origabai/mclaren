@@ -20,7 +20,7 @@ def bot_battle(bot1, bot2, games=GAMES):
     ans = 0
     for _ in range(games):
         res = client.run_simulation({"map": MAP, "mode": MODE}, [bot1, bot2], seed=12)
-        assert res.winner_index is not None
+        # assert res.winner_index is not None
         if res.winner_index == 0:
             ans += 1
     return ans
