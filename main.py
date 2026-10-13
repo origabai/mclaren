@@ -5,12 +5,6 @@ from enum import Enum
 
 from api import *
 
-"""
-the mighty main of the afek the mighty pytzov founder
-author: afek the mighty pytzov founder
-"""
-
-
 # Only pick the cool emotes of course
 EMOTES = [
     # Emote.NONE,
