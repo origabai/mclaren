@@ -241,8 +241,10 @@ class MyBot(ArazimWarsBot):
         self.economy_saving = 0
         self.hit_cooldown = 0
 
+        # Enemy targeting
         self.targeted_enemy = self.get_other_player_index()
         self.next_enemy = self.get_other_player_index()
+        self.rainbows_sent = 0
 
         self.action_index = 0
         self.map = self.context.get_map()
@@ -511,6 +513,9 @@ class MyBot(ArazimWarsBot):
 
         # Return how much budget was used
         if result == Result.OK:
+            if self.strategy == ECONOMY_ECONOMY.REGROW_RAINBOW:
+                self.rainbows_sent += 1
+
             return self.get_economy_budget() - sorted_bloons[-1][1].cost
         else:
             return self.get_economy_budget()
@@ -619,6 +624,9 @@ class MyBot(ArazimWarsBot):
             )
         ):
             self.targeted_enemy = self.next_enemy
+        if self.get_round() >= 16 and self.rainbows_sent < MAX_QUEUE_SIZE:
+            self.strategy = ECONOMY_ECONOMY.REGROW_RAINBOW
+        else:
             self.strategy = ECONOMY_ECONOMY.ECONOMY
 
         # Targeted enemy is dead move to next enemy
