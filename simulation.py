@@ -12,11 +12,11 @@ modes = ["Standard", "Bananza"]
 GAMES = 1
 MAP = maps[int(sys.argv[1])]
 MODE = modes[int(sys.argv[2])]
+client = Client()
 
 
 # returns num. of wins of bot1
 def bot_battle(bot1, bot2, games=GAMES):
-    client = Client()
     ans = 0
     for _ in range(games):
         res = client.run_simulation({"map": MAP, "mode": MODE}, [bot1, bot2], seed=12)
