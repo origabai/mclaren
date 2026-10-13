@@ -50,7 +50,7 @@ def check_this_const(curr_bot, const):
 
 
 LIST_LEN = 31
-TRIES = 20
+TRIES = 50
 
 
 def localsearch(bot_to_optimize):
