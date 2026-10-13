@@ -1,4 +1,4 @@
-PERCENTAGE_TO_MONKEY = [1] + [0.35 + 0.65 * (1 / i) for i in range(1, 30)]
+PERCENTAGE_TO_MONKEY = [1] + [0 for i in range(1, 30)]
 import random
 import typing
 from enum import Enum

@@ -55,12 +55,12 @@ TRIES = 20
 
 def localsearch(bot_to_optimize):
     current_bot = bot_to_optimize
-    current_state = [1] + [0.35 + 0.65 * (1 / i) for i in range(1, 30)]
+    current_state = [1] + [0 for i in range(1, 30)]
     # current_state = [0 for i in range(LIST_LEN)]
     for t in range(TRIES):
         new_state = current_state.copy()
         for i in range(30):
-            new_state[i] += uniform(-0.1, 0.1) / (((t + 1) / 2) ** 0.5)
+            new_state[i] += uniform(-0.5, 0.5) / (((t + 1) / 2) ** 0.5)
             new_state[i] = min(new_state[i], 1)
             new_state[i] = max(new_state[i], 0)
         swap, f = check_this_const(current_bot, new_state)
