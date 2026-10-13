@@ -585,13 +585,18 @@ class MyBot(ArazimWarsBot):
         """Checks wether a player can be attacked by camo."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return all(not can_monkey_see_camo(monkey) for monkey in monkeys)
+        return (
+            len(list(filter(lambda monkey: can_monkey_see_camo(monkey), monkeys))) <= 2
+        )
 
     def is_player_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by lead."""
         monkeys = self.context.get_player_monkeys(index)
 
-        return all(not can_monkey_shoot_lead(monkey) for monkey in monkeys)
+        return (
+            len(list(filter(lambda monkey: can_monkey_shoot_lead(monkey), monkeys)))
+            <= 2
+        )
 
     def is_player_camo_lead(self, index: int) -> bool:
         """Checks wether a player can be attacked by camo_lead."""
