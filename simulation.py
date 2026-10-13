@@ -1,13 +1,17 @@
 import os
 import random
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from random import choice, randint, uniform
 
 from code_battles_cli.api import Client
 
+maps = ["Interchange", "Yellow Brick", "Temple", "Shapes"]
+modes = ["Standard", "Bananza"]
+
 GAMES = 1
-MAP = "Interchange"
-MODE = "normal"
+MAP = maps[int(sys.argv[1])]
+MODE = modes[int(sys.argv[2])]
 
 
 # returns num. of wins of bot1
@@ -15,9 +19,8 @@ def bot_battle(bot1, bot2, games=GAMES):
     client = Client()
     ans = 0
     for _ in range(games):
-        print(bot1, bot2)
         res = client.run_simulation({"map": MAP, "mode": MODE}, [bot1, bot2], seed=12)
-        print(res.winner_index)
+        assert res.winner_index is not None
         if res.winner_index == 0:
             ans += 1
     return ans
@@ -39,30 +42,35 @@ def check_this_const(curr_bot, const):
             g.write(s)
     # print(const)
     if bot_battle(temp_file_name, curr_bot) == 1:
+        if curr_bot != "main.py":
+            os.system("rm " + curr_bot)
         return True, temp_file_name
+    os.system("rm " + temp_file_name)
     return False, ""
 
 
 LIST_LEN = 31
-TRIES = 1
+TRIES = 20
 
 
 def localsearch(bot_to_optimize):
     current_bot = bot_to_optimize
     current_state = [1] + [0.35 + 0.65 * (1 / i) for i in range(1, 30)]
     # current_state = [0 for i in range(LIST_LEN)]
-    for _ in range(TRIES):
-        print(current_bot)
+    for t in range(TRIES):
         new_state = current_state.copy()
-        for i in range(10):
-            new_state[i] += uniform(-0.1, 0.1)
+        for i in range(30):
+            new_state[i] += uniform(-0.1, 0.1) / (((t + 1) / 2) ** 0.5)
             new_state[i] = min(new_state[i], 1)
             new_state[i] = max(new_state[i], 0)
         swap, f = check_this_const(current_bot, new_state)
         if swap:
             current_bot = f
+        print(current_bot)
     return current_bot
 
+
+print(MAP, MODE)
 
 localsearch("main.py")
 
