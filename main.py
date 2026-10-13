@@ -52,6 +52,15 @@ MONKEY_NAMES = {
 
 # targets
 
+MONKEY_INITIAL_RANGES = {
+    Monkeys.DART_MONKEY: 101,
+    Monkeys.TACK_SHOOTER: 64,
+    Monkeys.NINJA_MONKEY: 121,
+    Monkeys.SUPER_MONKEY: 142,
+    Monkeys.BOMB_TOWER: 127,
+    Monkeys.SNIPER_MONKEY: 1000,
+}
+
 
 def _distance_to_segment(point: tuple[float, float], line: LineInfo) -> float:
     px, py = point
@@ -921,7 +930,7 @@ class MyBot(ArazimWarsBot):
             valid_placements,
             key=lambda point: self.evaluate_point(
                 point,
-                monkey_radius,
+                MONKEY_INITIAL_RANGES[monkey],
                 self.context.get_bloon_route() + self.context.get_eco_bloon_route(),
             ),
         )
