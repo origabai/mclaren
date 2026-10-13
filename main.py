@@ -93,7 +93,7 @@ def can_monkey_shoot_bloon(monkey: MonkeyInfo, bloon: BloonInfo) -> bool:
 CURRENT_MAX_BLOON = EcoBloons.GROUPED_PINK
 LEAD_MAX_BLOON = EcoBloons.SPACED_LEAD
 MIN_MOAB_CLASS = EcoBloons.BFB
-REGROW_RAINBOW_MAX_BLOON = EcoBloons.GROUPED_RAINBOW
+REGROW_RAINBOW_MAX_BLOON = EcoBloons.SPACED_RAINBOW
 
 
 MAX_QUEUE_SIZE = 5
@@ -716,7 +716,7 @@ class MyBot(ArazimWarsBot):
             return
         my_budget = self.context.get_money()
         new_money = my_budget - self.prev_money
-        if self.economy_saving > 500:
+        if self.economy_saving > 12000:
             self.economy_saving -= 500
             self.monkey_budget += 500
         self.monkey_budget = self.monkey_saving
@@ -1036,12 +1036,14 @@ class MyBot(ArazimWarsBot):
             )
             or (
                 self.strategy == ECONOMY_ECONOMY.REGROW_RAINBOW
-                and self.rainbows_sent >= 3
+                and self.rainbows_sent >= MAX_QUEUE_SIZE
             )
         ):
             self.targeted_enemy = self.next_enemy
 
-            if self.get_round() >= 16 and self.rainbows_sent < 3:
+            if self.get_round() >= 19:
+                self.strategy = ECONOMY_ECONOMY.DAMAGE
+            elif self.get_round() >= 12 and self.rainbows_sent < MAX_QUEUE_SIZE:
                 self.strategy = ECONOMY_ECONOMY.REGROW_RAINBOW
             else:
                 self.strategy = ECONOMY_ECONOMY.ECONOMY
